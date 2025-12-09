@@ -1,5 +1,5 @@
 # PhD Student in Computer Science
-[University of Utah] (https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
+[University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
 
 [![Google Scholar](https://img.shields.io/badge/Google%20Scholar-4285F4?style=flat&logo=google-scholar&logoColor=white)](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ghazal-abdollahi-b3206a2a9/)
