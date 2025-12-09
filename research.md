@@ -1,4 +1,4 @@
 # Research Overview
-<p align="right">
+<p align="left">
 My research centers on understanding how complex computing systems behave at scale and developing learning-driven mechanisms that make these systems more predictable, efficient, and secure. I work at the intersection of cloud platforms, data-center networking, and security analytics, where I design models that learn from real operational traces and adapt to dynamic workloads, emerging attack patterns, and resource constraints. A significant portion of my work involves discovering structure in noisy time-series data and translating it into actionable control policies for systems that must operate in real time. My internship in ML-based biomedical signal interpretation further strengthened my ability to reason across domains, handle imperfect experimental data, and build inference pipelines that prioritize reliability over surface-level accuracy. Across projects, my thinking is shaped by a balance of systems pragmatism and analytical rigor: I question assumptions, test edge cases, and aim for solutions that generalize beyond a single dataset or environment.
 </p>
