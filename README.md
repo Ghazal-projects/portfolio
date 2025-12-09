@@ -1,4 +1,4 @@
-# PhD Student in Computer Science**  
+# PhD Student in Computer Science
 University of Utah | [Flux Research Group](https://www.flux.utah.edu/)
 
 [![Google Scholar](https://img.shields.io/badge/Google%20Scholar-4285F4?style=flat&logo=google-scholar&logoColor=white)](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ)
