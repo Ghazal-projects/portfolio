@@ -20,5 +20,5 @@ I'm open to academic collaborations in my research areas. Feel free to reach out
 
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
-## Location
-**Location**:📍 Salt Lake City, Utah, USA
+##
+**📍**: Salt Lake City, Utah, USA
