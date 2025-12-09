@@ -7,7 +7,6 @@ University of Utah | [Flux Research Group](https://www.flux.utah.edu/)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ghazal-abdollahi-b3206a2a9/)
 
 
-## About
 
 ## About
 
