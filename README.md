@@ -25,3 +25,6 @@ I'm open to academic collaborations in my research areas. Feel free to reach out
 -------------------------------------------------
 
 **📍**: Salt Lake City, Utah, USA
+
+Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people. You’re only minutes to hours from spectacular landscapes—national parks like [Yellowstone](https://www.nps.gov/yell/index.htm), lakes such as Mirror Lake and Silver Lake, and many outdoor trails. It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city!
+
