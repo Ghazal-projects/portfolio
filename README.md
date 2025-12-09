@@ -8,7 +8,7 @@ University of Utah | [Flux Research Group](https://www.flux.utah.edu/)
 
 ## About
 
-I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://www.flux.utah.edu/profile/ricci) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research focuses on cloud computing, serverless systems, and applying machine learning to solve challenges in networking and security.
+I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research focuses on cloud computing, serverless systems, and applying machine learning to solve challenges in networking and security.
 
 Read more about my research approach here:
 [Research Overview →](research.md)
