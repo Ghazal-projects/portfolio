@@ -18,4 +18,4 @@ I'm open to academic collaborations in my research areas. Feel free to reach out
 
 ## Contact
 
-**Email**: Ghazal.Abdollahi@utah.edu
+**Email**: Ghazal [dot] Abdollahi [at] utah.edu
