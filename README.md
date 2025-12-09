@@ -13,6 +13,8 @@ University of Utah | [Flux Research Group](https://www.flux.utah.edu/)
 
 I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah, where I work with [Prof. Robert Ricci](https://www.flux.utah.edu/profile/ricci) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research focuses on cloud computing, serverless systems, and applying machine learning to solve challenges in networking and security.
 
+I'm open to academic collaborations in my research areas. Feel free to reach out through my email!
+
 ## Contact
 
 **Email**: Ghazal.Abdollahi@utah.edu
