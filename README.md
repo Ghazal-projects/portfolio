@@ -1,5 +1,3 @@
-# portfolio
-
 # Ghazal Abdollahi
 
 **PhD Student in Computer Science**  
