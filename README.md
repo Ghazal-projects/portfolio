@@ -15,7 +15,7 @@ Read more about my research approach here:
 
 
 I'm open to academic collaborations in my research areas. Feel free to reach out through my email!
-Also, please drop me an email if you’d like a copy of my CV.<br>
+<p> Also, please drop me an email if you’d like a copy of my CV.</p>
 
 
 ## Contact
