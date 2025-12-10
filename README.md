@@ -14,7 +14,7 @@ Read more about my research approach here:
 [Research Overview →](research.md)
 
 
-I'm open to academic collaborations in my research areas. Feel free to reach out through my email!
+I'm open to research collaborations in my research areas. Feel free to reach out through my email!
 <p> Also, please drop me an email if you’d like a copy of my CV.</p>
 
 
