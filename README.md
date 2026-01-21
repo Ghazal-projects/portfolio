@@ -32,7 +32,7 @@ Selected conferences, workshops, and summits I have **participated in**:
 - **AI Summit 2025** — University of Utah, Salt Lake City, UT, USA  
 - **KubeCon 2024** — Salt Lake City, UT, USA  
 - **ACM CCS 2024** — Salt Lake City, UT, USA  
-- **Machine Learning & Big Data HPC Workshop** — INSCC, University of Utah
+- **ML & Big Data HPC Workshop** — INSCC, University of Utah
 
 -------------------------------------------------
 **📍**: Salt Lake City, Utah, USA
