@@ -23,7 +23,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 -------------------------------------------------
-## 🎓 Conferences & Workshops
+## 🌐 Conferences & Workshops
 
 Selected conferences, workshops, and summits I have **participated in**:
 
