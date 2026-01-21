@@ -25,7 +25,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 -------------------------------------------------
 ## 🎓 Conferences & Workshops
 
-Selected conferences, workshops, and summits I have **participated in**.
+Selected conferences, workshops, and summits I have **participated in**:
 
 - **ACM HotNets 2025** — University of Maryland, MD, USA  
 - **NSDI 2025** — Philadelphia, PA, USA  
