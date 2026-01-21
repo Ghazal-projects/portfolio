@@ -28,3 +28,16 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 
 Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people. You’re only minutes to hours from spectacular landscapes; national parks like [Yellowstone](https://www.nps.gov/yell/index.htm), lakes such as Mirror Lake and Silver Lake, and many outdoor trails. It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city!
 
+-------------------------------------------------
+
+## 📖🎧 Recent favorite Books & Podcasts
+
+- **The Let Them Theory** — Mel Robbins  
+  _A practical lens on agency, focus, and action in complex work and life._  
+  https://www.melrobbins.com/book/the-let-them-theory/
+
+- 🎧 **The Diary Of A CEO**  
+  _Long-form conversations about motivation, leadership, and personal evolution._  
+  https://www.youtube.com/channel/UCGq-a57w-aPwyi3pW7XLiHw
+
+
