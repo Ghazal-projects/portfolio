@@ -37,4 +37,16 @@ Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genui
 - 🎧 **[The Diary Of A CEO](https://www.youtube.com/channel/UCGq-a57w-aPwyi3pW7XLiHw)**  
   _Long-form conversations about motivation, leadership, and personal evolution._
 
+-------------------------------------------------
+
+## 🎓 Conferences & Workshops
+
+Selected conferences, workshops, and summits I have **participated in**.
+
+- **ACM HotNets 2025** — University of Maryland, MD, USA  
+- **NSDI 2025** — Philadelphia, PA, USA  
+- **AI Summit 2025** — University of Utah, Salt Lake City, UT, USA  
+- **KubeCon 2024** — Salt Lake City, UT, USA  
+- **ACM CCS 2024** — Salt Lake City, UT, USA  
+- **Machine Learning & Big Data HPC Workshop** — INSCC, University of Utah
 
