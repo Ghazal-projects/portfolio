@@ -23,7 +23,18 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 -------------------------------------------------
+## 🎓 Conferences & Workshops
 
+Selected conferences, workshops, and summits I have **participated in**.
+
+- **ACM HotNets 2025** — University of Maryland, MD, USA  
+- **NSDI 2025** — Philadelphia, PA, USA  
+- **AI Summit 2025** — University of Utah, Salt Lake City, UT, USA  
+- **KubeCon 2024** — Salt Lake City, UT, USA  
+- **ACM CCS 2024** — Salt Lake City, UT, USA  
+- **Machine Learning & Big Data HPC Workshop** — INSCC, University of Utah
+
+-------------------------------------------------
 **📍**: Salt Lake City, Utah, USA
 
 Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people. You’re only minutes to hours from spectacular landscapes; national parks like [Yellowstone](https://www.nps.gov/yell/index.htm), lakes such as Mirror Lake and Silver Lake, and many outdoor trails. It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city!
@@ -39,14 +50,5 @@ Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genui
 
 -------------------------------------------------
 
-## 🎓 Conferences & Workshops
 
-Selected conferences, workshops, and summits I have **participated in**.
-
-- **ACM HotNets 2025** — University of Maryland, MD, USA  
-- **NSDI 2025** — Philadelphia, PA, USA  
-- **AI Summit 2025** — University of Utah, Salt Lake City, UT, USA  
-- **KubeCon 2024** — Salt Lake City, UT, USA  
-- **ACM CCS 2024** — Salt Lake City, UT, USA  
-- **Machine Learning & Big Data HPC Workshop** — INSCC, University of Utah
 
