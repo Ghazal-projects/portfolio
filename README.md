@@ -45,7 +45,7 @@ Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genui
 - **[The Let Them Theory — Mel Robbins](https://www.melrobbins.com/book/the-let-them-theory/)**  
   _A practical lens on agency, focus, and action in complex work and life._
 
-- 🎧 **[The Diary Of A CEO](https://www.youtube.com/channel/UCGq-a57w-aPwyi3pW7XLiHw)**  
+- **[The Diary Of A CEO](https://www.youtube.com/channel/UCGq-a57w-aPwyi3pW7XLiHw)**  
   _Long-form conversations about motivation, leadership, and personal evolution._
 
 -------------------------------------------------
