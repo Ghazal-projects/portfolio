@@ -41,21 +41,7 @@ Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genui
 
 
 ## 📸 Gallery
-Here are photos I took during my visit to Yellowstone in Spring 2025 :
-<p align="center">
-  <a href="images/1.jpeg"><img src="images/1.jpeg" height="160"/></a>
-  <a href="images/2.jpeg"><img src="images/2.jpeg" height="160"/></a>
-  <a href="images/4.jpeg"><img src="images/4.jpeg" height="160"/></a>
-</p>
-<p align="center">
-  <a href="images/5.jpeg"><img src="images/5.jpeg" height="160"/></a>
-  <a href="images/6.jpeg"><img src="images/6.jpeg" height="160"/></a>
-  <a href="images/7.png"><img src="images/7.png" height="160"/></a>
-</p>
-<p align="center">
-  <a href="images/8.jpeg"><img src="images/8.jpeg" height="160"/></a>
-  <a href="images/9.jpeg"><img src="images/9.jpeg" height="160"/></a>
-</p>
+[Yellowstone — Spring 2025](gallery.html)
 
 -------------------------------------------------
 
