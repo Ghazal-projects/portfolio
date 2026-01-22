@@ -37,13 +37,11 @@ Selected conferences, workshops, and summits I have **participated in**:
 -------------------------------------------------
 ## 📍 Salt Lake City, Utah, USA
 
-Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people.  
-You’re only minutes to hours from spectacular landscapes; national parks like [Yellowstone](https://www.nps.gov/yell/index.htm) (not in Utah, but much closer from here), lakes such as Mirror Lake and Silver Lake, and many outdoor trails.  
-It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city.
+Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people. You’re only minutes to hours from spectacular landscapes; national parks like [Yellowstone](https://www.nps.gov/yell/index.htm) (not in Utah, but much closer from here), lakes such as Mirror Lake and Silver Lake, and many outdoor trails. It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city.
 
 
 ## 📸 Gallery
-
+Here are photos I took during my visit to Yellowstone in Spring 2025 :
 <p align="center">
   <a href="images/1.jpeg"><img src="images/1.jpeg" height="160"/></a>
   <a href="images/2.jpeg"><img src="images/2.jpeg" height="160"/></a>
