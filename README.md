@@ -39,9 +39,23 @@ Selected conferences, workshops, and summits I have **participated in**:
 
 Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people. You’re only minutes to hours from spectacular landscapes; national parks like [Yellowstone](https://www.nps.gov/yell/index.htm), lakes such as Mirror Lake and Silver Lake, and many outdoor trails. It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city!
 
-[<img src="images/1.jpeg" width="180">](images/1.jpeg) [<img src="images/2.jpeg" width="180">](images/2.jpeg)  
-[<img src="images/4.jpeg" width="180">](images/4.jpeg) [<img src="images/5.jpeg" width="180">](images/5.jpeg)  [<img src="images/6.jpeg" width="180">](images/6.jpeg) 
-[<img src="images/7.png" width="180">](images/7.png) [<img src="images/8.jpeg" width="180">](images/8.jpeg)  [<img src="images/9.jpeg" width="180">](images/9.jpeg) 
+ ## 📸 Gallery
+
+<p align="center">
+  <a href="images/1.jpeg"><img src="images/1.jpeg" width="180"/></a>
+  <a href="images/2.jpeg"><img src="images/2.jpeg" width="180"/></a>
+</p>
+<p align="center">
+  <a href="images/4.jpeg"><img src="images/4.jpeg" width="180"/></a>
+  <a href="images/5.jpeg"><img src="images/5.jpeg" width="180"/></a>
+  <a href="images/6.jpeg"><img src="images/6.jpeg" width="180"/></a>
+</p>
+<p align="center">
+  <a href="images/7.png"><img src="images/7.png" width="180"/></a>
+  <a href="images/8.jpeg"><img src="images/8.jpeg" width="180"/></a>
+  <a href="images/9.jpeg"><img src="images/9.jpeg" width="180"/></a>
+</p>
+
 -------------------------------------------------
 
 ## 📖🎧 Recent favorite Books & Podcasts
