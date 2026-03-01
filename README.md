@@ -26,7 +26,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 ## 🌐 Conferences & Workshops
 
 Selected conferences, workshops, and summits I have **participated in**:
-
+- ** NDSS 2026**  — San Diego, CA, USA
 - **ACM HotNets 2025** — University of Maryland, MD, USA  
 - **NSDI 2025** — Philadelphia, PA, USA  
 - **AI Summit 2025** — University of Utah, Salt Lake City, UT, USA  
