@@ -18,7 +18,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 <p> Also, please drop me an email if you’d like a copy of my updated CV.</p>
 
 
-**Status = ACTIVELY SEEKING POSTDOC OPPORTUNITIES 🔭**
+**Status =  ACTIVELY SEEKING POSTDOC OPPORTUNITIES 🔭**
 
 ## Contact
 
