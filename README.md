@@ -17,10 +17,8 @@ Read more about my research approach here:
 I'm open to research collaborations in my research areas. Feel free to reach out through my email!
 <p> Also, please drop me an email if you’d like a copy of my updated CV.</p>
 
-status = "🔭 Actively seeking Postdoc opportunities"
-class Researcher:
-    def __init__(self):
-        self.status = "🔭 ACTIVELY SEEKING POSTDOC OPPORTUNITIES"
+
+Status = 🔭 ACTIVELY SEEKING POSTDOC OPPORTUNITIES
 
 ## Contact
 
