@@ -28,14 +28,15 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 ## 🌐 Conferences & Workshops
 
 Conferences, workshops, and summits I have **presented/attended** at:
-- **IEEE SmartCloud 2026** — NYC, New York City
+- **USENIX PEPR '26** — Santa Clara, CA, USA
+- **IEEE SmartCloud 2026** — NYC, New York City, USA
 - **NDSS 2026** — San Diego, CA, USA
 - **ACM HotNets 2025** — University of Maryland, MD, USA  
 - **NSDI 2025** — Philadelphia, PA, USA  
 - **AI Summit 2025** — University of Utah, Salt Lake City, UT, USA  
 - **KubeCon 2024** — Salt Lake City, UT, USA  
 - **ACM CCS 2024** — Salt Lake City, UT, USA  
-- **ML & Big Data HPC Workshop** — INSCC, University of Utah
+- **ML & Big Data HPC Workshop** — INSCC, University of Utah, USA
 
 -------------------------------------------------
 ## 📍 Salt Lake City, Utah, USA
