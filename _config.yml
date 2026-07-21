@@ -8,9 +8,6 @@ description: >
   focusing on it, it'll... and wiggle the line a little bit, it'll
   bring them in. Intuition is the intellect and emotions swimming
   together." — David Ling
-  #sidebar p {
-  text-align: justify;
-}
 logo: assets/profile.jpeg
 show_downloads: false
 theme: jekyll-theme-minimal
