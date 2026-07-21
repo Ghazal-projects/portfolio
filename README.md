@@ -1,4 +1,4 @@
-<p align="right">
+<p align="left">
   <img src="assets/profile.jpeg" alt="Ghazal Abdollahi" width="180">
 </p>
 # PhD Candidate in Computer Science
