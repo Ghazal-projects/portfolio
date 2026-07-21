@@ -3,8 +3,5 @@ logo: assets/profile.jpeg
 show_downloads: false
 theme: jekyll-theme-modernist
 
-.site-header,
-header.site-header {
-  background-color: #2c3e50;
-}
+
 
