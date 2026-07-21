@@ -58,6 +58,9 @@ Here are photos I took during my visit to Yellowstone in Spring 2025:
 - **[The Diary Of A CEO](https://www.youtube.com/channel/UCGq-a57w-aPwyi3pW7XLiHw)**  
   _Long-form conversations about motivation, leadership, and personal evolution._
 
+  - **[Effortless — Greg McKeown](https://www.amazon.com/Effortless-Make-Easier-What-Matters/dp/B08FMTSZLN/)**  
+  _A guide to making the most important work feel lighter, not harder._
+
 -------------------------------------------------
 
 
