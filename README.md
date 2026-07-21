@@ -1,4 +1,5 @@
-![Ghazal Abdollahi](assets/profile.jpeg)
+
+<img src="assets/profile.jpeg" alt="Ghazal Abdollahi" width="150">
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
 
