@@ -15,14 +15,14 @@ Read more about my research approach here:
 
 
 I'm open to research collaborations in my research areas. Feel free to reach out through my email!
-<p> Also, please drop me an email if you’d like a copy of my updated CV.</p>
+## Contact
+
+**Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 
 **Status =  ACTIVELY SEEKING POSTDOC OPPORTUNITIES 🔭**
 
-## Contact
 
-**Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 -------------------------------------------------
 ## 🌐 Conferences & Workshops
