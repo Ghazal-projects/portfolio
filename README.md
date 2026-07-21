@@ -1,3 +1,4 @@
+![Ghazal Abdollahi](assets/profile.jpeg)
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
 
