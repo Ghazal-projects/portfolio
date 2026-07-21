@@ -30,7 +30,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 
-**Status =  ACTIVELY SEEKING POSTDOC OPPORTUNITIES 🔭**
+**Status =  ACTIVELY seeking POSTDOC opportunities 🔭**
 
 
 
