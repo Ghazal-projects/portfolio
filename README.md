@@ -14,6 +14,15 @@ I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/)
 Read more about my research approach here:
 [Research Overview →](research.md)
 
+I love how this quote make sense in my research process: description: >
+  "It goes always, bit by bit. You don't see the whole thing at once.
+  The way it unfolds is anybody's guess. It's kind of a magical thing.
+  But eventually, it gets there. If you focus on it, it'll draw other
+  ideas in. And... but you don't know. Like fishing, you have to have
+  patience. You don't know how long it'll take. But if you keep
+  focusing on it, it'll... and wiggle the line a little bit, it'll
+  bring them in. Intuition is the intellect and emotions swimming
+  together." — David Lynch
 
 I'm open to research collaborations in my research areas. Feel free to reach out through my email!
 ## Contact
