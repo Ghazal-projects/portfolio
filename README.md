@@ -21,7 +21,6 @@ Read more about my research approach here:
   <br>
   <em>Photo taken at MEB, where my office is located — Summer 2026.</em>
 </p>
-Photo taken at MEB (Merrill Engineering Building), where my office is located — Summer 2026.
 
 I love how this quote make sense in my research process:
   "It goes always, bit by bit. You don't see the whole thing at once.
