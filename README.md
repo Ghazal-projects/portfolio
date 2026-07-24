@@ -19,7 +19,7 @@ Read more about my research approach here:
 <p align="center">
   <img src="assets/MEB.JPG" width="400">
   <br>
-  <em>Photo taken at MEB, where my office is located — Summer 2026.</em>
+  <em>Photo taken at MEB, where my office is located, Summer 2026.</em>
 </p>
 
 I love how this quote make sense in my research process:
