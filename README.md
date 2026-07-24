@@ -16,6 +16,13 @@ I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/)
 Read more about my research approach here:
 [Research Overview →](research.md)
 
+<p align="center">
+  <img src="images/MEB.JPG" alt="MEB Building" width="400">
+  <br>
+  <em>Photo taken at MEB, where my office is located — Summer 2026.</em>
+</p>
+Photo taken at MEB (Merrill Engineering Building), where my office is located — Summer 2026.
+
 I love how this quote make sense in my research process:
   "It goes always, bit by bit. You don't see the whole thing at once.
   The way it unfolds is anybody's guess. It's kind of a magical thing.
