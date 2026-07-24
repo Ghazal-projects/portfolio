@@ -17,7 +17,7 @@ Read more about my research approach here:
 [Research Overview →](research.md)
 
 <div align="center">
-  <img src="images/MEB.JPG" width="400">
+  <img src="assets/MEB.JPG" width="400">
   <br>
   <em>Photo taken at MEB, my office building, Summer 2026.</em>
 </div>
