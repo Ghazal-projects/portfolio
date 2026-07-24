@@ -22,6 +22,8 @@ Read more about my research approach here:
   <em>Photo taken at MEB, my office building, Summer 2026.</em>
 </div>
 
+
+
 I love how this quote make sense in my research process:
   "It goes always, bit by bit. You don't see the whole thing at once.
   The way it unfolds is anybody's guess. It's kind of a magical thing.
