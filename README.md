@@ -17,7 +17,7 @@ Read more about my research approach here:
 [Research Overview →](research.md)
 
 <p align="center">
-  <img src="images/MEB.JPG" alt="MEB Building" width="400">
+  <img src="images/MEB.JPG"  width="400">
   <br>
   <em>Photo taken at MEB, where my office is located — Summer 2026.</em>
 </p>
