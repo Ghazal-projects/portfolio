@@ -3,11 +3,19 @@
 
 @import "jekyll-theme-midnight";
 
-#main_content p {
+
+#main_content p,
+.inner p,
+article p {
   text-align: justify;
+
 }
 
 .site-header,
 header.site-header {
   background-color: #2e5984;
 }
+
+
+
+
