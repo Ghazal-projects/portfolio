@@ -16,7 +16,11 @@ I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/)
 Read more about my research approach here:
 [Research Overview →](research.md)
 
-
+<p align="center">
+  <img src="images/MEB.JPG" width="400">
+  <br>
+  <em>Photo taken at MEB, where my office is located — Summer 2026.</em>
+</p>
 
 I love how this quote make sense in my research process:
   "It goes always, bit by bit. You don't see the whole thing at once.
