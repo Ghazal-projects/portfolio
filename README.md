@@ -20,7 +20,8 @@ Read more about my research approach here:
   <img src="assets/MEB.JPG" width="400">
   <br>
   <em>Photo taken at MEB, my office building, Summer 2026.</em>
-  <br>
+
+  
 </div>
 
 
