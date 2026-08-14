@@ -4,7 +4,7 @@
       <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#ccc;">✕</span>
       🚀 Status = ACTIVELY looking for a well-suited POSTDOC position! 😊
     </div
-  </div>
+  
   <script>
     window.onload = function() {
       document.getElementById('notifOverlay').style.display = 'flex';
