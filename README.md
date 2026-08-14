@@ -3,14 +3,13 @@
     <div id="notif" style="background:#001f3f;color:#fff;padding:30px 50px;border-radius:12px;font-size:22px;font-weight:bold;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.5);max-width:90%;position:relative;">
       <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#ccc;">✕</span>
       🚀 Status = ACTIVELY looking for a well-suited POSTDOC position! 😊
-    </div
-  
+    </div>
+  </div>
   <script>
     window.onload = function() {
       document.getElementById('notifOverlay').style.display = 'flex';
     };
   </script>
-
   
 </body>
 # PhD Candidate in Computer Science
