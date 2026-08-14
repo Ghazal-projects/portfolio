@@ -2,7 +2,7 @@
   <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);z-index:9998;display:flex;align-items:center;justify-content:center;">
     <div id="notif" style="background:#001f3f;color:#fff;padding:30px 50px;border-radius:12px;font-size:22px;font-weight:bold;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.5);max-width:90%;position:relative;">
       <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#ccc;">✕</span>
-      🔭 Status = ACTIVELY seeking POSTDOC opportunities 🔭 😊
+      🔭😊 Status = ACTIVELY seeking POSTDOC opportunities 🔭 😊
     </div>
   </div>
   <script>
