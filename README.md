@@ -56,7 +56,9 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 
 **Status =  ACTIVELY seeking POSTDOC opportunities 🔭**
 
-
+<h3>Teaching Experience</h3>
+<p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026)</p>
+<p>Serving as TA for the senior capstone design course, supporting student teams through project development and technical mentorship.</p>
 
 -------------------------------------------------
 ## 🌐 Conferences & Workshops
