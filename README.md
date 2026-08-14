@@ -1,4 +1,16 @@
+<body>
+  ... your existing portfolio content ...
 
+  <div id="notif" style="position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 20px;border-radius:6px;">
+    Your message here
+  </div>
+  <script>
+    window.onload = function() {
+      document.getElementById('notif').style.display = 'block';
+      setTimeout(() => document.getElementById('notif').style.display = 'none', 5000);
+    };
+  </script>
+</body>
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
 
