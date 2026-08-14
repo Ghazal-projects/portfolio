@@ -1,16 +1,19 @@
 <body>
-
-
-  <div id="notif" style="position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 20px;border-radius:6px;">
-    <------- 🔭 Status =  ACTIVELY seeking POSTDOC opportunities 🔭 ------->
-
+  <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9998;display:flex;align-items:center;justify-content:center;">
+    <div id="notif" style="background:#222;color:#fff;padding:30px 50px;border-radius:12px;font-size:22px;font-weight:bold;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.5);max-width:90%;">
+      🔭 Status = ACTIVELY seeking POSTDOC opportunities 🔭
+      <br><br>
+      <button onclick="document.getElementById('notifOverlay').style.display='none'" style="margin-top:15px;padding:8px 20px;border:none;border-radius:6px;background:#fff;color:#222;font-weight:bold;cursor:pointer;">Close</button>
+    </div>
   </div>
   <script>
     window.onload = function() {
-      document.getElementById('notif').style.display = 'block';
-      setTimeout(() => document.getElementById('notif').style.display = 'none', 5000);
+      document.getElementById('notifOverlay').style.display = 'flex';
     };
   </script>
+
+
+  
 </body>
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
