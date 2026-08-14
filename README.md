@@ -2,7 +2,7 @@
 
 
   <div id="notif" style="position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 20px;border-radius:6px;">
-    **Status =  ACTIVELY seeking POSTDOC opportunities 🔭**
+    <------- Status =  ACTIVELY seeking POSTDOC opportunities 🔭 ------->
 
   </div>
   <script>
