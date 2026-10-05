@@ -67,7 +67,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 The papers themselves are on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
 
 <h3>Teaching Experience</h3>
-<p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): This semester I am one of five TAs for a 224-student senior capstone course. I read and ranked close to 200 project proposals during team formation, and I now meet my teams for thirty minutes every week to press on data, novelty, scope, and milestones, including projects sponsored by WebBank and the Huntsman Cancer Institute. Staying with a team's idea week after week and helping it become something real has been the best part of the semester.</p>
+<p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): This semester I am one of five TAs for a 224-student senior capstone course. I read and ranked close to 200 project proposals during team formation, and I now meet each of my ten assigned teams for thirty minutes every week to press on data, novelty, scope, and milestones, including projects sponsored by WebBank and the Huntsman Cancer Institute. Staying with a team's idea week after week and helping it become something real has been the best part of the semester.</p>
 
 -------------------------------------------------
 ## 🌐 Conferences & Workshops
