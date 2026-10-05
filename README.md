@@ -22,7 +22,11 @@
 
 ## About
 
-I'm a PhD student at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research focuses on cloud computing, serverless systems, and applying machine learning to solve challenges in networking and security.
+I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research is about how computing systems can notice what is forming in their own data early enough to act on it, in a way people can follow. I call this Interpretable Signal-to-Control (O→S→C: observation, signal, control), and I have developed it in serverless computing, data center networking, and network security.
+
+**On the academic job market, 2026–27** (tenure-track and postdoctoral positions). PhD expected by March 2027.
+
+[CV](assets/cv.pdf) | [Research Statement](assets/research-statement.pdf) | [Teaching Statement](assets/teaching-statement.pdf)
 
 Read more about my research approach here:
 [Research Overview →](research.md)
@@ -37,7 +41,7 @@ Read more about my research approach here:
 
 
 
-I love how this quote make sense in my research process:
+I love how this quote makes sense in my research process:
   "It goes always, bit by bit. You don't see the whole thing at once.
   The way it unfolds is anybody's guess. It's kind of a magical thing.
   But eventually, it gets there. If you focus on it, it'll draw other
@@ -53,7 +57,19 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 
-**Status =  ACTIVELY seeking POSTDOC/Tenure-track  opportunities 🔭**
+**Status = ACTIVELY seeking POSTDOC and TENURE-TRACK opportunities 🔭**
+
+## 📄 Publications
+
+- **Vertex**: Towards Recommender Firewalls Resilient to Post-Detection Evasion — *ACM IMC 2026 (poster)*
+- **EPIC**: When Learners Disagree, Campaigns Speak; Perceiving Structure in Unfolding SSH Episodes — *ACM SIGCOMM 2026 (poster)*
+- **Combo**: Proactive Momentum and the Reactive Wall — *ACM NetNeg, SIGCOMM 2026*
+- **WarmFlex**: Coordinated Stabilization of Cold-Start Frequency and Idle Containers in Serverless Platforms — *IEEE SmartCloud 2026*
+- **NOD**: Uncovering Intense Attackers' Behavior Through Nested Outlier Detection from SSH Logs — *NDSS PRISM 2026*
+- **FMap**: A Fuzzy Map for Scheduling Elephant Flows Through Jumping — *Concurrency and Computation*
+- Flow-Aware Forwarding in SDN Data Centers Using a Knapsack-PSO-Based Solution — *IEEE Transactions on Network and Service Management*
+
+Full list on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
 
 <h3>Teaching Experience</h3>
 <p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): Serving as TA for the senior capstone design course, supporting student teams through project development and technical mentorship.</p>
@@ -62,7 +78,9 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 ## 🌐 Conferences & Workshops
 
 Conferences, workshops, and summits I have **presented/attended** at:
-- **ACM RecSys 2026** — Minneapolis, Minnesota, USA 
+- **ACM MobiCom 2026** — Austin, TX, USA *(N2Women Travel Grant)*
+- **ACM RecSys 2026** — Minneapolis, Minnesota, USA
+- **PMAPS 2026** — Salt Lake City, UT, USA *(Student Volunteer)*
 - **SIGCOMM 2026** — Denver, Colorado, USA
 - **AI Convergence Summit 2026** — University of Utah, SLC, UT, USA 
 - **USENIX PEPR '26** — Santa Clara, CA, USA
