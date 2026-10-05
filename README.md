@@ -53,7 +53,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
 
-**Status =  ACTIVELY seeking POSTDOC opportunities 🔭**
+**Status =  ACTIVELY seeking POSTDOC/Tenure-track  opportunities 🔭**
 
 <h3>Teaching Experience</h3>
 <p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): Serving as TA for the senior capstone design course, supporting student teams through project development and technical mentorship.</p>
