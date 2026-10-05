@@ -24,7 +24,7 @@
 
 I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research is about how computing systems can notice what is forming in their own data early enough to act on it, in a way people can follow. I call this Interpretable Signal-to-Control (O→S→C: observation, signal, control), and I have developed it in serverless computing, data center networking, and network security.
 
-**On the academic job market, 2026–27** (tenure-track and postdoctoral positions). PhD expected by March 2027.
+**On the academic job market, 2026–27** (tenure-track and postdoctoral positions).
 
 [CV](assets/cv.pdf) | [Research Statement](assets/research-statement.pdf) | [Teaching Statement](assets/teaching-statement.pdf)
 
@@ -59,20 +59,17 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 
 **Status = ACTIVELY seeking POSTDOC and TENURE-TRACK opportunities 🔭**
 
-## 📄 Publications
+## 💡 What My Papers Have Taught Me
 
-- **Vertex**: Towards Recommender Firewalls Resilient to Post-Detection Evasion — *ACM IMC 2026 (poster)*
-- **EPIC**: When Learners Disagree, Campaigns Speak; Perceiving Structure in Unfolding SSH Episodes — *ACM SIGCOMM 2026 (poster)*
-- **Combo**: Proactive Momentum and the Reactive Wall — *ACM NetNeg, SIGCOMM 2026*
-- **WarmFlex**: Coordinated Stabilization of Cold-Start Frequency and Idle Containers in Serverless Platforms — *IEEE SmartCloud 2026*
-- **NOD**: Uncovering Intense Attackers' Behavior Through Nested Outlier Detection from SSH Logs — *NDSS PRISM 2026*
-- **FMap**: A Fuzzy Map for Scheduling Elephant Flows Through Jumping — *Concurrency and Computation*
-- Flow-Aware Forwarding in SDN Data Centers Using a Knapsack-PSO-Based Solution — *IEEE Transactions on Network and Service Management*
+- **Serverless:** cold starts and idle containers are one problem, not two. Reading how long a function runs and how soon it will be called again lets a platform steady both at once, with rules an operator can read line by line.
+- **Data center networking:** flow populations show structure before any single flow can be classified. Following that idea to its limit led me to the "reactive wall", a negative result that taught me more than the cases where the method worked.
+- **Security:** SSH logs hold millions of attempts and little direct evidence of intent. Looking at attacker populations instead of single events reveals who is attacking, and when independently trained learners disagree about an attacker, that disagreement is itself an early sign of a campaign in transition.
+- **Across all three:** the useful signals took similar shapes in fields that rarely cite one another, which is the question I most want to keep exploring.
 
-Full list on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
+The papers themselves are on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
 
 <h3>Teaching Experience</h3>
-<p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): Serving as TA for the senior capstone design course, supporting student teams through project development and technical mentorship.</p>
+<p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): This semester I am one of five TAs for a 224-student senior capstone course. I read and ranked close to 200 project proposals during team formation, and I now meet my teams for thirty minutes every week to press on data, novelty, scope, and milestones, including projects sponsored by WebBank and the Huntsman Cancer Institute. Staying with a team's idea week after week and helping it become something real has been the best part of the semester.</p>
 
 -------------------------------------------------
 ## 🌐 Conferences & Workshops
