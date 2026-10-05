@@ -26,8 +26,6 @@ I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu
 
 **On the academic job market, 2026–27** (tenure-track and postdoctoral positions).
 
-[CV](assets/cv.pdf) | [Research Statement](assets/research-statement.pdf) | [Teaching Statement](assets/teaching-statement.pdf)
-
 Read more about my research approach here:
 [Research Overview →](research.md)
 
