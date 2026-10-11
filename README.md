@@ -43,8 +43,8 @@
       // dots light up first. Lines then grow inward from both of them, dot by
       // dot, until they meet in the middle. The finished line shines once and
       // then dissolves, and the other margin takes its turn.
-      // It starts once the status popup has been closed. On a narrow screen with
-      // no margins, the dots cover the page at reduced strength.
+      // It starts once the status popup has been closed. The margins follow the
+      // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
@@ -52,33 +52,41 @@
       var ENDS = 1300, STEP = 420, SHINE = 1100, FADE = 1500, PAUSE = 1000;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], ep = null, dim = 1;
-      var lastFrame = 0, nextStart = 0, margins = false, side = 1;
-      function build() {
-        var left = -1, right = -1;
-        var column = document.querySelector('.wrapper');
-        if (column) {
-          var r = column.getBoundingClientRect();
-          if (w - r.width >= 260) { left = r.left - 30; right = r.right + 30; }
-        }
-        margins = left >= 0;
-        dim = margins ? 1 : 0.6;
-        pts = [];
-        for (var x = GAP / 2; x < w; x += GAP) {
+      var lastFrame = 0, nextStart = 0, side = 1;
+      function fill(from, to, sideId) {
+        // Spread dots evenly over one margin, however wide or narrow it is.
+        var width = to - from;
+        if (width < 36) return;
+        var cols = Math.max(1, Math.round(width / GAP));
+        var colW = width / cols;
+        var sway = Math.max(0, Math.min(GAP * 0.35, colW / 2 - 10));
+        for (var c = 0; c < cols; c++) {
           for (var y = GAP / 2; y < h; y += GAP) {
-            var px = x + (Math.random() - 0.5) * GAP * 0.7;
-            var py = y + (Math.random() - 0.5) * GAP * 0.7;
-            // On a wide screen, keep dots out of the content column entirely.
-            if (margins && px > left && px < right) continue;
-            pts.push({ x: px, y: py, side: !margins ? 0 : (px < left ? -1 : 1), soft: 1 });
+            pts.push({
+              x: from + (c + 0.5) * colW + (Math.random() * 2 - 1) * sway,
+              y: y + (Math.random() - 0.5) * GAP * 0.7,
+              side: sideId, soft: 1
+            });
           }
         }
+      }
+      function build() {
+        // Dots live only in the space left and right of the content column. As
+        // the window narrows the margins shrink, and once they are gone (tablet
+        // and phone widths) there are no dots at all.
+        pts = [];
         ep = null;
+        var column = document.querySelector('.wrapper');
+        if (!column) return;
+        var r = column.getBoundingClientRect();
+        fill(0, r.left - 30, -1);
+        fill(r.right + 30, w, 1);
       }
       function startEpisode(t) {
         // Take one margin (left and right alternate) and collect the dots that
         // lead from its top to its bottom.
         var j, near = [];
-        side = !margins ? 0 : (side === -1 ? 1 : -1);
+        side = side === -1 ? 1 : -1;
         for (j = 0; j < pts.length; j++) if (pts[j].side === side && pts[j].y < GAP) near.push(j);
         if (!near.length) return;
         var cur = near[Math.floor(Math.random() * near.length)];
