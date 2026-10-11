@@ -37,14 +37,14 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: scattered dots stand for raw observations. One structure at a
-      // time, neighbouring dots are connected one line after another, held for a
-      // moment, and then the lines dissolve one by one in the same order.
-      // Dots and lines stay in the page margins, clear of the text column.
+      // Background: faint scattered dots across the page stand for raw observations.
+      // One chain at a time, neighbouring dots are connected one line after
+      // another, held for a moment, and then the lines dissolve one by one in the
+      // same order. The lines stay in the page margins, clear of the text column.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 64, REACH = 105, MAX_NODES = 7, MAX_DEPTH = 3;
+      var GAP = 64, REACH = 105, MAX_NODES = 6;
       var STEP = 650, HOLD = 1600, OUT = 400, FADE = 600, PAUSE = 700;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], ep = null, dim = 1, lastFrame = 0, nextStart = 0;
@@ -61,29 +61,31 @@
           for (var y = GAP / 2; y < h; y += GAP) {
             var px = x + (Math.random() - 0.5) * GAP * 0.8;
             var py = y + (Math.random() - 0.5) * GAP * 0.8;
-            if (px > left && px < right) continue;
-            pts.push({ x: px, y: py });
+            pts.push({ x: px, y: py, edge: left < 0 || px < left || px > right });
           }
         }
         ep = null;
       }
       function startEpisode(t) {
+        // A single chain: each new line starts from the dot the last one reached.
+        // Only dots outside the text column can be linked.
         if (!pts.length) return;
         var seed = Math.floor(Math.random() * pts.length);
-        var depth = {}; depth[seed] = 0;
-        var queue = [seed], count = 1, edges = [];
-        while (queue.length && count < MAX_NODES) {
-          var c = queue.shift(), d = depth[c];
-          if (d >= MAX_DEPTH) continue;
-          for (var j = 0; j < pts.length && count < MAX_NODES; j++) {
-            if (depth[j] !== undefined) continue;
-            var dx = pts[j].x - pts[c].x, dy = pts[j].y - pts[c].y;
-            if (dx * dx + dy * dy > REACH * REACH || Math.random() > 0.6) continue;
-            depth[j] = d + 1;
-            edges.push({ a: c, b: j });
-            count++;
-            queue.push(j);
+        if (!pts[seed].edge) return;
+        var used = {}; used[seed] = true;
+        var cur = seed, edges = [];
+        while (edges.length < MAX_NODES - 1) {
+          var near = [];
+          for (var j = 0; j < pts.length; j++) {
+            if (used[j] || !pts[j].edge) continue;
+            var dx = pts[j].x - pts[cur].x, dy = pts[j].y - pts[cur].y;
+            if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
           }
+          if (!near.length) break;
+          var next = near[Math.floor(Math.random() * near.length)];
+          used[next] = true;
+          edges.push({ a: cur, b: next });
+          cur = next;
         }
         if (edges.length >= 3) ep = { t0: t, seed: seed, edges: edges };
       }
@@ -96,7 +98,7 @@
       }
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, 0.09 * dim);
+        for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, (pts[i].edge ? 0.09 : 0.06) * dim);
         if (!ep) return;
         var n = ep.edges.length, age = t - ep.t0;
         var outStart = n * STEP + HOLD;
@@ -128,7 +130,7 @@
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         build();
         if (still) {
-          for (var i = 0; i < 20 && !ep; i++) startEpisode(0);
+          for (var i = 0; i < 200 && !ep; i++) startEpisode(0);
           draw(ep ? ep.edges.length * STEP + 1 : 0);
         }
       }
