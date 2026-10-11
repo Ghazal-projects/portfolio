@@ -1,17 +1,39 @@
 <body>
-  <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:transparent;z-index:9998;display:flex;align-items:center;justify-content:center;">
-    <div id="notif" style="background:rgba(255,255,255,0.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,31,63,0.25);color:#111;padding:26px 44px 24px;border-radius:8px;border-top:4px solid #001f3f;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,0.25);width:max-content;max-width:92vw;box-sizing:border-box;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;text-wrap:balance;">
-      <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;" aria-label="Close">✕</span>
+  <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,31,63,0);transition:background 0.5s ease;z-index:9998;display:none;">
+    <div id="notif" style="background:rgba(255,255,255,0.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,31,63,0.25);color:#111;padding:26px 44px 22px;border-radius:8px;border-top:4px solid #001f3f;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,0.25);width:max-content;max-width:92vw;box-sizing:border-box;position:fixed;top:50%;left:50%;transform:translate(-50%,-44%);opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;margin:0;text-wrap:balance;">
+      <span onclick="closeNotif()" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;" aria-label="Close">✕</span>
       <div style="font-size:20px;font-weight:600;color:#001f3f;margin-bottom:8px;">On the academic job market, 2026–27</div>
       <div style="font-size:16px;line-height:1.5;">Seeking tenure-track faculty and postdoctoral positions</div>
+      <div style="margin-top:16px;">
+        <a href="research.html" style="display:inline-block;margin:0 4px;padding:6px 14px;border-radius:5px;background:#001f3f;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Research</a>
+        <a href="assets/Ghazal_Abdollahi_CV.pdf" style="display:inline-block;margin:0 4px;padding:5px 14px;border-radius:5px;border:1px solid #001f3f;color:#001f3f;font-size:14px;font-weight:600;text-decoration:none;">Short CV</a>
+      </div>
     </div>
   </div>
   <script>
-    window.onload = function() {
-      document.getElementById('notifOverlay').style.display = 'flex';
-    };
+    (function () {
+      var overlay = document.getElementById('notifOverlay');
+      var card = document.getElementById('notif');
+      window.closeNotif = function () {
+        card.style.opacity = '0';
+        card.style.transform = 'translate(-50%,-44%)';
+        overlay.style.background = 'rgba(0,31,63,0)';
+        setTimeout(function () { overlay.style.display = 'none'; }, 500);
+      };
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closeNotif(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNotif(); });
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          overlay.style.display = 'block';
+          setTimeout(function () {
+            card.style.opacity = '1';
+            card.style.transform = 'translate(-50%,-50%)';
+            overlay.style.background = 'rgba(0,31,63,0.08)';
+          }, 30);
+        }, 500);
+      });
+    })();
   </script>
-  
 </body>
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
@@ -25,11 +47,14 @@
 
 I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research is about how computing systems can notice what is forming in their own data early enough to act on it, in a way people can follow. I call this Interpretable Signal-to-Control (O→S→C: observation, signal, control), and I have developed it in serverless computing, data center networking, and network security.
 
-**On the academic job market, 2026–27** (tenure-track and postdoctoral positions).
-
-[Research Overview →](research.md)
-
-A short version of my CV is [here (PDF)](assets/Ghazal_Abdollahi_CV.pdf).
+<div style="border-left:4px solid #001f3f;background:#f4f6f9;padding:12px 16px;margin:20px 0 16px;border-radius:0 6px 6px 0;text-align:left;line-height:1.5;">
+  <strong style="color:#001f3f;">On the academic job market, 2026–27</strong><br>
+  Seeking tenure-track faculty and postdoctoral positions.
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px;">
+  <a href="research.html" style="display:inline-block;padding:8px 16px;border-radius:5px;background:#001f3f;color:#fff;font-weight:600;text-decoration:none;">Research Overview →</a>
+  <a href="assets/Ghazal_Abdollahi_CV.pdf" style="display:inline-block;padding:7px 16px;border-radius:5px;border:1px solid #001f3f;color:#001f3f;font-weight:600;text-decoration:none;">Short CV (PDF)</a>
+</div>
 
 <div align="center">
   <img src="assets/MEB.JPG" width="400">
