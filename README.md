@@ -38,20 +38,20 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: a sparse field of faint dots. A single thread travels slowly
-      // across the whole page through its centre, joining one dot to the next,
-      // while the line it leaves behind dissolves a few steps later. When it
-      // reaches the far edge, a new thread crosses in a different direction.
-      // The thread starts once the status popup has been closed, and is paler
-      // where it passes behind the text column.
+      // Background: a sparse field of faint dots. Two dots at opposite ends of
+      // the page light up first. Lines then grow inward from both of them, dot
+      // by dot, until they meet in the middle. The finished line shines once and
+      // then the whole thing dissolves. The next pair lies in another direction.
+      // It starts once the status popup has been closed, and is paler where it
+      // passes behind the text column.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
       var GAP = 110, REACH = 210;
-      var STEP = 1100, LIFE = 2600, FADE = 2200, PAUSE = 1200;
+      var ENDS = 1300, STEP = 420, SHINE = 1100, FADE = 1500, PAUSE = 1000;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, pts = [], segs = [], head = -1, dim = 1;
-      var lastFrame = 0, busyUntil = 0, nextStart = 0, dirX = 1, dirY = 0;
+      var w = 0, h = 0, pts = [], ep = null, dim = 1;
+      var lastFrame = 0, nextStart = 0, dirX = 1, dirY = 0;
       function build() {
         var left = -1, right = -1;
         var column = document.querySelector('.wrapper');
@@ -65,69 +65,75 @@
           for (var y = GAP / 2; y < h; y += GAP) {
             var px = x + (Math.random() - 0.5) * GAP * 0.7;
             var py = y + (Math.random() - 0.5) * GAP * 0.7;
-            pts.push({ x: px, y: py, edge: left < 0 || px < left || px > right });
+            pts.push({ x: px, y: py, soft: (left < 0 || px < left || px > right) ? 1 : 0.5 });
           }
         }
-        segs = []; head = -1;
+        ep = null;
       }
       function along(pt) { return (pt.x - w / 2) * dirX + (pt.y - h / 2) * dirY; }
       function across(pt) { return (pt.y - h / 2) * dirX - (pt.x - w / 2) * dirY; }
-      function advance(t) {
-        var j, near = [];
-        if (head < 0) {
-          if (!window.popupClosed || t < nextStart) return;
-          // New thread: pick a fresh direction through the centre of the page and
-          // start from the dot furthest back along it.
-          var angle = Math.random() * 6.2832;
-          dirX = Math.cos(angle); dirY = Math.sin(angle);
-          for (j = 0; j < pts.length; j++) {
-            if (Math.abs(across(pts[j])) > GAP * 0.8) continue;
-            if (head < 0 || along(pts[j]) < along(pts[head])) head = j;
-          }
-          if (head < 0) return;
-        }
-        // Next dot: further along the same direction, close to the centre line.
+      function startEpisode(t) {
+        // Pick a direction through the centre of the page, then collect the dots
+        // that lead from one edge to the opposite edge along it.
+        var angle = Math.random() * 6.2832, j, cur = -1;
+        dirX = Math.cos(angle); dirY = Math.sin(angle);
         for (j = 0; j < pts.length; j++) {
-          if (along(pts[j]) - along(pts[head]) < GAP * 0.4) continue;
-          if (Math.abs(across(pts[j])) > GAP * 0.9) continue;
-          var dx = pts[j].x - pts[head].x, dy = pts[j].y - pts[head].y;
-          if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
+          if (Math.abs(across(pts[j])) > GAP * 0.8) continue;
+          if (cur < 0 || along(pts[j]) < along(pts[cur])) cur = j;
         }
-        if (!near.length) { head = -1; nextStart = t + LIFE + PAUSE; return; }
-        var next = near[Math.floor(Math.random() * near.length)];
-        segs.push({ a: head, b: next, t0: t });
-        head = next;
-        busyUntil = t + STEP;
+        if (cur < 0) return;
+        var path = [cur];
+        while (true) {
+          var near = [];
+          for (j = 0; j < pts.length; j++) {
+            if (along(pts[j]) - along(pts[cur]) < GAP * 0.4) continue;
+            if (Math.abs(across(pts[j])) > GAP * 0.9) continue;
+            var dx = pts[j].x - pts[cur].x, dy = pts[j].y - pts[cur].y;
+            if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
+          }
+          if (!near.length) break;
+          cur = near[Math.floor(Math.random() * near.length)];
+          path.push(cur);
+        }
+        if (path.length >= 4) ep = { t0: t, path: path };
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
-      function dot(x, y, radius, alpha) {
+      function dot(pt, radius, alpha) {
         ctx.fillStyle = 'rgba(0,31,63,' + alpha + ')';
         ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 6.2832);
+        ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
         ctx.fill();
       }
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < pts.length; i++) dot(pts[i].x, pts[i].y, 1.3, (pts[i].edge ? 0.08 : 0.05) * dim);
-        ctx.lineWidth = 1;
+        for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, 0.08 * pts[i].soft * dim);
+        if (!ep) return;
+        var path = ep.path, n = path.length - 1, age = t - ep.t0;
+        var joined = ENDS + Math.ceil(n / 2) * STEP;
+        if (age > joined + SHINE + FADE) { ep = null; nextStart = t + PAUSE; return; }
+        var shine = age > joined ? Math.sin(3.1416 * clamp((age - joined) / SHINE)) : 0;
+        var keep = 1 - clamp((age - joined - SHINE) / FADE);
         ctx.lineCap = 'round';
-        for (var k = segs.length - 1; k >= 0; k--) {
-          var sg = segs[k], age = t - sg.t0;
-          var keep = 1 - clamp((age - STEP - LIFE) / FADE);
-          if (keep <= 0) { segs.splice(k, 1); continue; }
-          var A = pts[sg.a], B = pts[sg.b];
-          var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp(age / STEP));
-          var soft = ((A.edge && B.edge) ? 1 : 0.5) * dim * keep;
-          var tx = A.x + (B.x - A.x) * grow, ty = A.y + (B.y - A.y) * grow;
-          ctx.strokeStyle = 'rgba(0,31,63,' + (0.2 * soft) + ')';
+        ctx.lineWidth = 1 + 0.8 * shine;
+        for (var k = 0; k < n; k++) {
+          // Segments are drawn from both ends at once, working toward the middle.
+          var fromStart = k <= n - 1 - k;
+          var rank = fromStart ? k : n - 1 - k;
+          var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp((age - ENDS - rank * STEP) / STEP));
+          if (grow <= 0) continue;
+          var A = pts[path[fromStart ? k : k + 1]], B = pts[path[fromStart ? k + 1 : k]];
+          var soft = Math.min(A.soft, B.soft) * dim * keep;
+          ctx.strokeStyle = 'rgba(0,31,63,' + ((0.2 + 0.3 * shine) * soft) + ')';
           ctx.beginPath();
           ctx.moveTo(A.x, A.y);
-          ctx.lineTo(tx, ty);
+          ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
           ctx.stroke();
-          dot(A.x, A.y, 2.4, 0.26 * soft);
-          if (grow < 1) dot(tx, ty, 2, 0.3 * soft);
-          else dot(B.x, B.y, 2.4, 0.26 * soft);
+          if (grow > 0.99) dot(B, 2.2 + 0.8 * shine, (0.26 + 0.3 * shine) * soft);
         }
+        var appear = clamp(age / 600) * keep * dim;
+        var first = pts[path[0]], last = pts[path[n]];
+        dot(first, 3.2 + shine, (0.38 + 0.25 * shine) * appear * first.soft);
+        dot(last, 3.2 + shine, (0.38 + 0.25 * shine) * appear * last.soft);
       }
       function resize() {
         var ratio = window.devicePixelRatio || 1;
@@ -142,7 +148,7 @@
       function tick(t) {
         if (t - lastFrame > 30) {
           lastFrame = t;
-          if (t >= busyUntil) advance(t);
+          if (!ep && window.popupClosed && t >= nextStart) startEpisode(t);
           draw(t);
         }
         window.requestAnimationFrame(tick);
