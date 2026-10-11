@@ -35,7 +35,7 @@ I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu
   <em>Photo taken at MEB, my office building, Summer 2026.</em>
 </div>
 
-## Contact
+## ✉️ Contact
 
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
