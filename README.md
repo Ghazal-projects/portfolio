@@ -38,18 +38,20 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: faint scattered dots across the page stand for raw observations.
-      // One chain at a time, neighbouring dots are connected one line after
-      // another, held for a moment, and then the lines dissolve one by one in the
-      // same order. Chains can form anywhere; behind the text column they are paler.
-      // Chains only start once the status popup has been closed.
+      // Background: a sparse field of faint dots. A single thread travels slowly
+      // across the page from left to right, joining one dot to the next, while
+      // the line it leaves behind dissolves a few steps later. When it reaches
+      // the right edge, a new thread begins on the left at another height.
+      // The thread starts once the status popup has been closed, and is paler
+      // where it passes behind the text column.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 64, REACH = 105, MAX_NODES = 6;
-      var STEP = 650, HOLD = 1600, OUT = 400, FADE = 600, PAUSE = 700;
+      var GAP = 110, REACH = 210;
+      var STEP = 1100, LIFE = 2600, FADE = 2200, PAUSE = 1200;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, pts = [], ep = null, dim = 1, lastFrame = 0, nextStart = 0;
+      var w = 0, h = 0, pts = [], segs = [], head = -1, dim = 1;
+      var lastFrame = 0, busyUntil = 0, nextStart = 0;
       function build() {
         var left = -1, right = -1;
         var column = document.querySelector('.wrapper');
@@ -57,69 +59,66 @@
           var r = column.getBoundingClientRect();
           if (w - r.width >= 260) { left = r.left - 24; right = r.right + 24; }
         }
-        dim = left < 0 ? 0.55 : 1;
+        dim = left < 0 ? 0.6 : 1;
         pts = [];
         for (var x = GAP / 2; x < w; x += GAP) {
           for (var y = GAP / 2; y < h; y += GAP) {
-            var px = x + (Math.random() - 0.5) * GAP * 0.8;
-            var py = y + (Math.random() - 0.5) * GAP * 0.8;
+            var px = x + (Math.random() - 0.5) * GAP * 0.7;
+            var py = y + (Math.random() - 0.5) * GAP * 0.7;
             pts.push({ x: px, y: py, edge: left < 0 || px < left || px > right });
           }
         }
-        ep = null;
+        segs = []; head = -1;
       }
-      function startEpisode(t) {
-        // A single chain: each new line starts from the dot the last one reached.
-        if (!pts.length) return;
-        var seed = Math.floor(Math.random() * pts.length);
-        var used = {}; used[seed] = true;
-        var cur = seed, edges = [];
-        while (edges.length < MAX_NODES - 1) {
-          var near = [];
-          for (var j = 0; j < pts.length; j++) {
-            if (used[j]) continue;
-            var dx = pts[j].x - pts[cur].x, dy = pts[j].y - pts[cur].y;
-            if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
-          }
-          if (!near.length) break;
-          var next = near[Math.floor(Math.random() * near.length)];
-          used[next] = true;
-          edges.push({ a: cur, b: next });
-          cur = next;
+      function advance(t) {
+        var j, near = [];
+        if (head < 0) {
+          if (!window.popupClosed || t < nextStart) return;
+          for (j = 0; j < pts.length; j++) if (pts[j].x < GAP) near.push(j);
+          if (!near.length) return;
+          head = near[Math.floor(Math.random() * near.length)];
+          near = [];
         }
-        if (edges.length >= 3) ep = { t0: t, seed: seed, edges: edges };
+        // Next dot: ahead of the current one, without climbing or dropping steeply.
+        for (j = 0; j < pts.length; j++) {
+          var dx = pts[j].x - pts[head].x, dy = pts[j].y - pts[head].y;
+          if (dx < GAP * 0.4 || Math.abs(dy) > dx * 1.1) continue;
+          if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
+        }
+        if (!near.length) { head = -1; nextStart = t + LIFE + PAUSE; return; }
+        var next = near[Math.floor(Math.random() * near.length)];
+        segs.push({ a: head, b: next, t0: t });
+        head = next;
+        busyUntil = t + STEP;
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
-      function dot(pt, radius, alpha) {
+      function dot(x, y, radius, alpha) {
         ctx.fillStyle = 'rgba(0,31,63,' + alpha + ')';
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
+        ctx.arc(x, y, radius, 0, 6.2832);
         ctx.fill();
       }
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, (pts[i].edge ? 0.09 : 0.06) * dim);
-        if (!ep) return;
-        var n = ep.edges.length, age = t - ep.t0;
-        var outStart = n * STEP + HOLD;
-        if (age > outStart + (n - 1) * OUT + FADE) { ep = null; nextStart = t + PAUSE; return; }
+        for (var i = 0; i < pts.length; i++) dot(pts[i].x, pts[i].y, 1.3, (pts[i].edge ? 0.08 : 0.05) * dim);
         ctx.lineWidth = 1;
-        var lastGone = 1 - clamp((age - outStart - (n - 1) * OUT) / FADE);
-        dot(pts[ep.seed], 2.7, (pts[ep.seed].edge ? 0.3 : 0.16) * dim * clamp(age / 300) * lastGone);
-        for (var k = 0; k < n; k++) {
-          var grow = clamp((age - k * STEP) / STEP);
-          if (grow <= 0) break;
-          var keep = 1 - clamp((age - outStart - k * OUT) / FADE);
-          if (keep <= 0) continue;
-          var A = pts[ep.edges[k].a], B = pts[ep.edges[k].b];
-          var soft = (A.edge && B.edge) ? 1 : 0.55;
-          ctx.strokeStyle = 'rgba(0,31,63,' + (0.22 * dim * soft * keep) + ')';
+        ctx.lineCap = 'round';
+        for (var k = segs.length - 1; k >= 0; k--) {
+          var sg = segs[k], age = t - sg.t0;
+          var keep = 1 - clamp((age - STEP - LIFE) / FADE);
+          if (keep <= 0) { segs.splice(k, 1); continue; }
+          var A = pts[sg.a], B = pts[sg.b];
+          var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp(age / STEP));
+          var soft = ((A.edge && B.edge) ? 1 : 0.5) * dim * keep;
+          var tx = A.x + (B.x - A.x) * grow, ty = A.y + (B.y - A.y) * grow;
+          ctx.strokeStyle = 'rgba(0,31,63,' + (0.2 * soft) + ')';
           ctx.beginPath();
           ctx.moveTo(A.x, A.y);
-          ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
+          ctx.lineTo(tx, ty);
           ctx.stroke();
-          var lit = clamp((grow - 0.8) / 0.2) * keep;
-          if (lit > 0) dot(B, 1.3 + 1.4 * lit, 0.3 * dim * soft * lit);
+          dot(A.x, A.y, 2.4, 0.26 * soft);
+          if (grow < 1) dot(tx, ty, 2, 0.3 * soft);
+          else dot(B.x, B.y, 2.4, 0.26 * soft);
         }
       }
       function resize() {
@@ -130,15 +129,12 @@
         canvas.height = h * ratio;
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         build();
-        if (still) {
-          for (var i = 0; i < 200 && !ep; i++) startEpisode(0);
-          draw(ep ? ep.edges.length * STEP + 1 : 0);
-        }
+        draw(0);
       }
       function tick(t) {
-        if (t - lastFrame > 33) {
+        if (t - lastFrame > 30) {
           lastFrame = t;
-          if (!ep && window.popupClosed && t >= nextStart) startEpisode(t);
+          if (t >= busyUntil) advance(t);
           draw(t);
         }
         window.requestAnimationFrame(tick);
