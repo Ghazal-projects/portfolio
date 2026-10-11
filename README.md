@@ -39,22 +39,22 @@
   <script>
     (function () {
       // Background: sparse faint dots in the left and right page margins only,
-      // never behind the content. In one margin at a time, a dot near the top
-      // and a dot near the bottom light up. Several different routes between
-      // them are then sketched faintly, dot by dot, from both ends. Once they
-      // have all met, the shortest route is picked: it shines while the others
-      // fade away, and then it dissolves too. The other margin goes next, with
-      // new end dots and new routes each time.
+      // never behind the content. Every three seconds a new pattern begins, the
+      // left and right margins taking turns: a dot in the upper part and a dot
+      // in the lower part light up, several different routes between them are
+      // sketched faintly, dot by dot, from both ends, and once they have all
+      // met the shortest route is picked. It shines while the others fade
+      // away, and then it dissolves too. End dots and routes are new each time.
       // It starts once the status popup has been closed. The margins follow the
       // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
       var GAP = 110, REACH = 210, ROUTES = 3;
-      var ENDS = 1100, STEP = 420, DECIDE = 800, SHINE = 1200, FADE = 1500, PAUSE = 1000;
+      var EVERY = 3000, ENDS = 600, STEP = 260, DECIDE = 500, SHINE = 800, FADE = 900;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, pts = [], ep = null;
-      var lastFrame = 0, nextStart = 0, side = 1;
+      var w = 0, h = 0, pts = [], eps = [];
+      var lastFrame = 0, lastStart = -EVERY, side = 1;
       function fill(from, to, sideId) {
         // Spread dots evenly over one margin, however wide or narrow it is.
         var width = to - from;
@@ -77,7 +77,7 @@
         // the window narrows the margins shrink, and once they are gone (tablet
         // and phone widths) there are no dots at all.
         pts = [];
-        ep = null;
+        eps = [];
         var column = document.querySelector('.wrapper');
         if (!column) return;
         var r = column.getBoundingClientRect();
@@ -116,14 +116,15 @@
       }
       function startEpisode(t) {
         side = side === -1 ? 1 : -1;
-        var j, lowest = 0, tops = [], bottoms = [];
-        for (j = 0; j < pts.length; j++) if (pts[j].side === side && pts[j].y > lowest) lowest = pts[j].y;
+        // The two end dots are picked afresh each time: one somewhere in the
+        // upper part of the margin, one somewhere in the lower part.
+        var j, tops = [], bottoms = [];
         for (j = 0; j < pts.length; j++) {
           if (pts[j].side !== side) continue;
-          if (pts[j].y < GAP) tops.push(j);
-          else if (pts[j].y > lowest - GAP * 0.6) bottoms.push(j);
+          if (pts[j].y < h * 0.3) tops.push(j);
+          else if (pts[j].y > h * 0.7) bottoms.push(j);
         }
-        if (!tops.length || !bottoms.length) return;
+        if (!tops.length || !bottoms.length) return false;
         var from = pick(tops), to = pick(bottoms);
         var routes = [], seen = {}, chosen = 0, half = 0;
         for (var tries = 0; tries < 14 && routes.length < ROUTES; tries++) {
@@ -132,12 +133,13 @@
           seen[route.join(',')] = true;
           routes.push(route);
         }
-        if (!routes.length) return;
+        if (!routes.length) return false;
         for (j = 0; j < routes.length; j++) {
           if (routeLength(routes[j]) < routeLength(routes[chosen])) chosen = j;
           half = Math.max(half, Math.ceil((routes[j].length - 1) / 2));
         }
-        ep = { t0: t, from: from, to: to, routes: routes, chosen: chosen, half: half };
+        eps.push({ t0: t, from: from, to: to, routes: routes, chosen: chosen, half: half });
+        return true;
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
       function dot(pt, radius, alpha) {
@@ -167,23 +169,24 @@
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
         for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, 0.08);
-        if (!ep) return;
-        var age = t - ep.t0;
-        var joined = ENDS + ep.half * STEP;
-        var shineStart = joined + DECIDE * 0.5;
-        if (age > shineStart + SHINE + FADE) { ep = null; nextStart = t + PAUSE; return; }
-        var others = 1 - clamp((age - joined) / DECIDE);
-        var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
-        var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
         ctx.lineCap = 'round';
-        for (var r = 0; r < ep.routes.length; r++) {
-          if (r === ep.chosen) continue;
-          if (others > 0) drawRoute(ep.routes[r], age, 0.12 * others, 0);
+        for (var e = eps.length - 1; e >= 0; e--) {
+          var ep = eps[e], age = t - ep.t0;
+          var joined = ENDS + ep.half * STEP;
+          var shineStart = joined + DECIDE * 0.5;
+          if (age > shineStart + SHINE + FADE) { eps.splice(e, 1); continue; }
+          var others = 1 - clamp((age - joined) / DECIDE);
+          var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
+          var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
+          for (var r = 0; r < ep.routes.length; r++) {
+            if (r === ep.chosen) continue;
+            if (others > 0) drawRoute(ep.routes[r], age, 0.12 * others, 0);
+          }
+          drawRoute(ep.routes[ep.chosen], age, (0.14 + 0.36 * shine) * keep, shine);
+          var appear = clamp(age / 400) * keep;
+          dot(pts[ep.from], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
+          dot(pts[ep.to], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
         }
-        drawRoute(ep.routes[ep.chosen], age, (0.14 + 0.36 * shine) * keep, shine);
-        var appear = clamp(age / 600) * keep;
-        dot(pts[ep.from], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
-        dot(pts[ep.to], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
       }
       function resize() {
         var ratio = window.devicePixelRatio || 1;
@@ -198,7 +201,7 @@
       function tick(t) {
         if (t - lastFrame > 30) {
           lastFrame = t;
-          if (!ep && window.popupClosed && t >= nextStart) startEpisode(t);
+          if (window.popupClosed && t - lastStart >= EVERY && startEpisode(t)) lastStart = t;
           draw(t);
         }
         window.requestAnimationFrame(tick);
