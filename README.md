@@ -40,17 +40,19 @@
     (function () {
       // Background: sparse faint dots in the left and right page margins only,
       // never behind the content. Every three seconds a new pattern begins, the
-      // left and right margins taking turns: a dot in the upper part and a dot
-      // in the lower part light up, several different routes between them are
-      // sketched faintly, dot by dot, from both ends, and once they have all
-      // met the shortest route is picked. It shines while the others fade
-      // away, and then it dissolves too. End dots and routes are new each time.
+      // left and right margins taking turns: two dots light up, several
+      // different routes between them are sketched faintly, dot by dot, and
+      // once they are complete one route is picked. It shines while the others
+      // fade away, and then it dissolves too. Every pattern differs in where it
+      // sits, how far apart its two dots are and in which direction, how many
+      // routes are tried (two to four), which one wins (shortest, longest or
+      // any), and whether it is drawn from both ends or from one.
       // It starts once the status popup has been closed. The margins follow the
       // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 110, REACH = 210, ROUTES = 3;
+      var GAP = 110, REACH = 210, ROUTES = 4;
       var EVERY = 3000, ENDS = 600, STEP = 260, DECIDE = 500, SHINE = 800, FADE = 900;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], eps = [];
@@ -85,60 +87,75 @@
         fill(r.right + 30, w, 1);
       }
       function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+      function gapBetween(i, j) {
+        return Math.sqrt(Math.pow(pts[i].x - pts[j].x, 2) + Math.pow(pts[i].y - pts[j].y, 2));
+      }
       function makeRoute(from, to) {
-        // Wander downward from one end dot to the other, leaning toward the target.
-        var cur = from, route = [from];
+        // Wander from one end dot to the other in any direction, each hop
+        // landing a little closer to the target.
+        var cur = from, route = [from], used = {};
+        used[from] = true;
         for (var guard = 0; guard < 40; guard++) {
-          var near = [], canFinish = false;
+          var left = gapBetween(cur, to), near = [];
           for (var j = 0; j < pts.length; j++) {
-            if (pts[j].side !== side) continue;
-            var dx = pts[j].x - pts[cur].x, dy = pts[j].y - pts[cur].y;
-            var d2 = dx * dx + dy * dy;
-            if (j === to) { canFinish = dy > 0 && d2 <= REACH * REACH * 1.3; continue; }
-            if (dy < GAP * 0.4 || Math.abs(dx) > dy * 1.3 || d2 > REACH * REACH) continue;
-            if (pts[j].y > pts[to].y - GAP * 0.3) continue;
-            near.push(j);
+            if (j === to || used[j] || pts[j].side !== side) continue;
+            if (gapBetween(cur, j) <= REACH && gapBetween(j, to) < left - GAP * 0.15) near.push(j);
           }
-          if (canFinish && (!near.length || Math.random() < 0.5)) { route.push(to); return route; }
+          var canFinish = left <= REACH * 1.15;
+          if (canFinish && (!near.length || (route.length > 1 && Math.random() < 0.5))) { route.push(to); return route; }
           if (!near.length) return null;
-          var one = pick(near), two = pick(near);
-          cur = Math.abs(pts[one].x - pts[to].x) <= Math.abs(pts[two].x - pts[to].x) ? one : two;
+          cur = pick(near);
+          used[cur] = true;
           route.push(cur);
         }
         return null;
       }
       function routeLength(route) {
         var total = 0;
-        for (var i = 1; i < route.length; i++) {
-          total += Math.sqrt(Math.pow(pts[route[i]].x - pts[route[i - 1]].x, 2) + Math.pow(pts[route[i]].y - pts[route[i - 1]].y, 2));
-        }
+        for (var i = 1; i < route.length; i++) total += gapBetween(route[i], route[i - 1]);
         return total;
       }
       function startEpisode(t) {
         side = side === -1 ? 1 : -1;
-        // The two end dots are picked afresh each time: one somewhere in the
-        // upper part of the margin, one somewhere in the lower part.
-        var j, tops = [], bottoms = [];
-        for (j = 0; j < pts.length; j++) {
-          if (pts[j].side !== side) continue;
-          if (pts[j].y < h * 0.3) tops.push(j);
-          else if (pts[j].y > h * 0.7) bottoms.push(j);
+        var j, mine = [], far = [];
+        for (j = 0; j < pts.length; j++) if (pts[j].side === side) mine.push(j);
+        if (mine.length < 3) return false;
+        // Where and how long: a random first dot anywhere in this margin, and a
+        // second one a short, medium or long way off in any direction.
+        var from = pick(mine), roll = Math.random();
+        var lo = roll < 0.35 ? 1.4 : (roll < 0.75 ? 2.6 : 4.5);
+        var hi = roll < 0.35 ? 2.6 : (roll < 0.75 ? 4.5 : 99);
+        for (j = 0; j < mine.length; j++) {
+          var d = gapBetween(from, mine[j]) / GAP;
+          if (d >= lo && d < hi) far.push(mine[j]);
         }
-        if (!tops.length || !bottoms.length) return false;
-        var from = pick(tops), to = pick(bottoms);
-        var routes = [], seen = {}, chosen = 0, half = 0;
-        for (var tries = 0; tries < 14 && routes.length < ROUTES; tries++) {
+        if (!far.length) return false;
+        var to = pick(far);
+        var want = 2 + Math.floor(Math.random() * (ROUTES - 1));
+        var routes = [], seen = {};
+        for (var tries = 0; tries < 16 && routes.length < want; tries++) {
           var route = makeRoute(from, to);
           if (!route || route.length < 3 || seen[route.join(',')]) continue;
           seen[route.join(',')] = true;
           routes.push(route);
         }
         if (!routes.length) return false;
-        for (j = 0; j < routes.length; j++) {
-          if (routeLength(routes[j]) < routeLength(routes[chosen])) chosen = j;
-          half = Math.max(half, Math.ceil((routes[j].length - 1) / 2));
+        // Which route wins: sometimes the shortest, sometimes the longest,
+        // sometimes any of them.
+        var rule = Math.random(), chosen = 0;
+        if (rule > 0.7) chosen = Math.floor(Math.random() * routes.length);
+        else for (j = 1; j < routes.length; j++) {
+          var shorter = routeLength(routes[j]) < routeLength(routes[chosen]);
+          if (rule < 0.4 ? shorter : !shorter) chosen = j;
         }
-        eps.push({ t0: t, from: from, to: to, routes: routes, chosen: chosen, half: half });
+        // How it is drawn: from both end dots toward the middle, or from one end
+        // dot all the way to the other.
+        var both = Math.random() < 0.5, steps = 0;
+        for (j = 0; j < routes.length; j++) {
+          var hops = routes[j].length - 1;
+          steps = Math.max(steps, both ? Math.ceil(hops / 2) : hops);
+        }
+        eps.push({ t0: t, from: from, to: to, routes: routes, chosen: chosen, both: both, steps: steps });
         return true;
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
@@ -148,13 +165,12 @@
         ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
         ctx.fill();
       }
-      function drawRoute(route, age, alpha, extra) {
-        // Segments are drawn from both ends at once, working toward the middle.
+      function drawRoute(route, age, alpha, extra, both) {
         var n = route.length - 1;
         ctx.lineWidth = 1 + 0.8 * extra;
         ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
         for (var k = 0; k < n; k++) {
-          var fromStart = k <= n - 1 - k;
+          var fromStart = !both || k <= n - 1 - k;
           var rank = fromStart ? k : n - 1 - k;
           var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp((age - ENDS - rank * STEP) / STEP));
           if (grow <= 0) continue;
@@ -172,7 +188,7 @@
         ctx.lineCap = 'round';
         for (var e = eps.length - 1; e >= 0; e--) {
           var ep = eps[e], age = t - ep.t0;
-          var joined = ENDS + ep.half * STEP;
+          var joined = ENDS + ep.steps * STEP;
           var shineStart = joined + DECIDE * 0.5;
           if (age > shineStart + SHINE + FADE) { eps.splice(e, 1); continue; }
           var others = 1 - clamp((age - joined) / DECIDE);
@@ -180,9 +196,9 @@
           var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
           for (var r = 0; r < ep.routes.length; r++) {
             if (r === ep.chosen) continue;
-            if (others > 0) drawRoute(ep.routes[r], age, 0.12 * others, 0);
+            if (others > 0) drawRoute(ep.routes[r], age, 0.12 * others, 0, ep.both);
           }
-          drawRoute(ep.routes[ep.chosen], age, (0.14 + 0.36 * shine) * keep, shine);
+          drawRoute(ep.routes[ep.chosen], age, (0.14 + 0.36 * shine) * keep, shine, ep.both);
           var appear = clamp(age / 400) * keep;
           dot(pts[ep.from], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
           dot(pts[ep.to], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
