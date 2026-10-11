@@ -39,24 +39,24 @@
   <script>
     (function () {
       // Background: sparse faint dots in the left and right page margins only,
-      // never behind the content. Every three seconds a new pattern begins, the
-      // left and right margins taking turns: two dots light up, several
-      // different routes between them are sketched faintly, dot by dot, and
-      // once they are complete one route is picked. It shines while the others
-      // fade away, and then it dissolves too. Every pattern differs in where it
-      // sits, how far apart its two dots are and in which direction, how many
-      // routes are tried (two to four), which one wins (shortest, longest or
-      // any), and whether it is drawn from both ends or from one.
+      // never behind the content. Each margin runs its own slow cycle:
+      //   1. two dots light up, somewhere in the margin, near or far apart;
+      //   2. a connection is tried from one toward the other, dot by dot. Often
+      //      it reaches a dead end, pauses, and fades away, and another way is
+      //      tried. This can happen up to three times; sometimes the first try
+      //      already works;
+      //   3. the try that reaches the other dot is kept. It glows gently and
+      //      then dissolves, and after a short rest a new pair is chosen.
       // It starts once the status popup has been closed. The margins follow the
       // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 110, REACH = 210, ROUTES = 4;
-      var EVERY = 3000, ENDS = 600, STEP = 260, DECIDE = 500, SHINE = 800, FADE = 900;
+      var GAP = 110, REACH = 210, MAX_FAILS = 3, QUICK = 0.3;
+      var ENDS = 900, STEP = 480, STALL = 400, GIVE_UP = 650, SHINE = 1300, FADE = 1400;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], eps = [];
-      var lastFrame = 0, lastStart = -EVERY, side = 1;
+      var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 };
       function fill(from, to, sideId) {
         // Spread dots evenly over one margin, however wide or narrow it is.
         var width = to - from;
@@ -90,7 +90,7 @@
       function gapBetween(i, j) {
         return Math.sqrt(Math.pow(pts[i].x - pts[j].x, 2) + Math.pow(pts[i].y - pts[j].y, 2));
       }
-      function makeRoute(from, to) {
+      function makeRoute(from, to, side) {
         // Wander from one end dot to the other in any direction, each hop
         // landing a little closer to the target.
         var cur = from, route = [from], used = {};
@@ -110,18 +110,12 @@
         }
         return null;
       }
-      function routeLength(route) {
-        var total = 0;
-        for (var i = 1; i < route.length; i++) total += gapBetween(route[i], route[i - 1]);
-        return total;
-      }
-      function startEpisode(t) {
-        side = side === -1 ? 1 : -1;
+      function startEpisode(t, side) {
         var j, mine = [], far = [];
         for (j = 0; j < pts.length; j++) if (pts[j].side === side) mine.push(j);
         if (mine.length < 3) return false;
-        // Where and how long: a random first dot anywhere in this margin, and a
-        // second one a short, medium or long way off in any direction.
+        // A random first dot anywhere in this margin, and a second one a short,
+        // medium or long way off in any direction.
         var from = pick(mine), roll = Math.random();
         var lo = roll < 0.35 ? 1.4 : (roll < 0.75 ? 2.6 : 4.5);
         var hi = roll < 0.35 ? 2.6 : (roll < 0.75 ? 4.5 : 99);
@@ -131,31 +125,28 @@
         }
         if (!far.length) return false;
         var to = pick(far);
-        var want = 2 + Math.floor(Math.random() * (ROUTES - 1));
+        // Sometimes the decision is quick (no failed tries); otherwise one to
+        // three different ways are tried and dropped first.
+        var fails = Math.random() < QUICK ? 0 : 1 + Math.floor(Math.random() * MAX_FAILS);
         var routes = [], seen = {};
-        for (var tries = 0; tries < 16 && routes.length < want; tries++) {
-          var route = makeRoute(from, to);
+        for (var n = 0; n < 20 && routes.length < fails + 1; n++) {
+          var route = makeRoute(from, to, side);
           if (!route || route.length < 3 || seen[route.join(',')]) continue;
           seen[route.join(',')] = true;
           routes.push(route);
         }
         if (!routes.length) return false;
-        // Which route wins: sometimes the shortest, sometimes the longest,
-        // sometimes any of them.
-        var rule = Math.random(), chosen = 0;
-        if (rule > 0.7) chosen = Math.floor(Math.random() * routes.length);
-        else for (j = 1; j < routes.length; j++) {
-          var shorter = routeLength(routes[j]) < routeLength(routes[chosen]);
-          if (rule < 0.4 ? shorter : !shorter) chosen = j;
-        }
-        // How it is drawn: from both end dots toward the middle, or from one end
-        // dot all the way to the other.
-        var both = Math.random() < 0.5, steps = 0;
+        var tries = [], clock = ENDS;
         for (j = 0; j < routes.length; j++) {
-          var hops = routes[j].length - 1;
-          steps = Math.max(steps, both ? Math.ceil(hops / 2) : hops);
+          var last = j === routes.length - 1;
+          var full = routes[j].length - 1;
+          // A failed try stops at a dead end part of the way along.
+          var hops = last ? full : 1 + Math.floor(Math.random() * (full - 1));
+          var reached = clock + hops * STEP;
+          tries.push({ route: routes[j], hops: hops, start: clock, reached: reached });
+          clock = reached + STALL + GIVE_UP + 200;
         }
-        eps.push({ t0: t, from: from, to: to, routes: routes, chosen: chosen, both: both, steps: steps });
+        eps.push({ t0: t, side: side, from: from, to: to, tries: tries });
         return true;
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
@@ -165,21 +156,18 @@
         ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
         ctx.fill();
       }
-      function drawRoute(route, age, alpha, extra, both) {
-        var n = route.length - 1;
-        ctx.lineWidth = 1 + 0.8 * extra;
+      function drawTry(tr, age, alpha, extra) {
+        ctx.lineWidth = 1 + 0.5 * extra;
         ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
-        for (var k = 0; k < n; k++) {
-          var fromStart = !both || k <= n - 1 - k;
-          var rank = fromStart ? k : n - 1 - k;
-          var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp((age - ENDS - rank * STEP) / STEP));
-          if (grow <= 0) continue;
-          var A = pts[route[fromStart ? k : k + 1]], B = pts[route[fromStart ? k + 1 : k]];
+        for (var k = 0; k < tr.hops; k++) {
+          var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp((age - tr.start - k * STEP) / STEP));
+          if (grow <= 0) break;
+          var A = pts[tr.route[k]], B = pts[tr.route[k + 1]];
           ctx.beginPath();
           ctx.moveTo(A.x, A.y);
           ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
           ctx.stroke();
-          if (grow > 0.99) dot(B, 2 + 0.9 * extra, alpha * 1.2);
+          if (grow > 0.99) dot(B, 2 + 0.6 * extra, alpha * 1.2);
         }
       }
       function draw(t) {
@@ -188,21 +176,29 @@
         ctx.lineCap = 'round';
         for (var e = eps.length - 1; e >= 0; e--) {
           var ep = eps[e], age = t - ep.t0;
-          var joined = ENDS + ep.steps * STEP;
-          var shineStart = joined + DECIDE * 0.5;
-          if (age > shineStart + SHINE + FADE) { eps.splice(e, 1); continue; }
-          var others = 1 - clamp((age - joined) / DECIDE);
+          var win = ep.tries[ep.tries.length - 1];
+          var shineStart = win.reached + 250;
+          if (age > shineStart + SHINE + FADE) {
+            nextAt[ep.side] = t + 900 + Math.random() * 1300;
+            eps.splice(e, 1);
+            continue;
+          }
           var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
           var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
-          for (var r = 0; r < ep.routes.length; r++) {
-            if (r === ep.chosen) continue;
-            if (others > 0) drawRoute(ep.routes[r], age, 0.12 * others, 0, ep.both);
+          for (var r = 0; r < ep.tries.length - 1; r++) {
+            var tr = ep.tries[r];
+            var drop = 1 - clamp((age - tr.reached - STALL) / GIVE_UP);
+            if (age >= tr.start && drop > 0) drawTry(tr, age, 0.15 * drop, 0);
           }
-          drawRoute(ep.routes[ep.chosen], age, (0.14 + 0.36 * shine) * keep, shine, ep.both);
-          var appear = clamp(age / 400) * keep;
-          dot(pts[ep.from], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
-          dot(pts[ep.to], 3.2 + shine, (0.38 + 0.25 * shine) * appear);
+          if (age >= win.start) drawTry(win, age, (0.16 + 0.12 * shine) * keep, shine);
+          var appear = clamp(age / 500) * keep;
+          dot(pts[ep.from], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
+          dot(pts[ep.to], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
         }
+      }
+      function busy(side) {
+        for (var e = 0; e < eps.length; e++) if (eps[e].side === side) return true;
+        return false;
       }
       function resize() {
         var ratio = window.devicePixelRatio || 1;
@@ -217,7 +213,13 @@
       function tick(t) {
         if (t - lastFrame > 30) {
           lastFrame = t;
-          if (window.popupClosed && t - lastStart >= EVERY && startEpisode(t)) lastStart = t;
+          if (window.popupClosed) {
+            // The right margin starts a little after the left one, so the two
+            // are never in step.
+            if (!began) { began = true; nextAt[-1] = t; nextAt[1] = t + 2600; }
+            if (!busy(-1) && t >= nextAt[-1]) startEpisode(t, -1);
+            if (!busy(1) && t >= nextAt[1]) startEpisode(t, 1);
+          }
           draw(t);
         }
         window.requestAnimationFrame(tick);
