@@ -38,12 +38,13 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: a sparse field of faint dots. Two dots at opposite ends of
-      // the page light up first. Lines then grow inward from both of them, dot
-      // by dot, until they meet in the middle. The finished line shines once and
-      // then the whole thing dissolves. The next pair lies in another direction.
-      // It starts once the status popup has been closed, and is paler where it
-      // passes behind the text column.
+      // Background: sparse faint dots in the left and right page margins only,
+      // never behind the content. In one margin at a time, the top and bottom
+      // dots light up first. Lines then grow inward from both of them, dot by
+      // dot, until they meet in the middle. The finished line shines once and
+      // then dissolves, and the other margin takes its turn.
+      // It starts once the status popup has been closed. On a narrow screen with
+      // no margins, the dots cover the page at reduced strength.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
@@ -51,44 +52,43 @@
       var ENDS = 1300, STEP = 420, SHINE = 1100, FADE = 1500, PAUSE = 1000;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], ep = null, dim = 1;
-      var lastFrame = 0, nextStart = 0, dirX = 1, dirY = 0;
+      var lastFrame = 0, nextStart = 0, margins = false, side = 1;
       function build() {
         var left = -1, right = -1;
         var column = document.querySelector('.wrapper');
         if (column) {
           var r = column.getBoundingClientRect();
-          if (w - r.width >= 260) { left = r.left - 24; right = r.right + 24; }
+          if (w - r.width >= 260) { left = r.left - 30; right = r.right + 30; }
         }
-        dim = left < 0 ? 0.6 : 1;
+        margins = left >= 0;
+        dim = margins ? 1 : 0.6;
         pts = [];
         for (var x = GAP / 2; x < w; x += GAP) {
           for (var y = GAP / 2; y < h; y += GAP) {
             var px = x + (Math.random() - 0.5) * GAP * 0.7;
             var py = y + (Math.random() - 0.5) * GAP * 0.7;
-            pts.push({ x: px, y: py, soft: (left < 0 || px < left || px > right) ? 1 : 0.5 });
+            // On a wide screen, keep dots out of the content column entirely.
+            if (margins && px > left && px < right) continue;
+            pts.push({ x: px, y: py, side: !margins ? 0 : (px < left ? -1 : 1), soft: 1 });
           }
         }
         ep = null;
       }
-      function along(pt) { return (pt.x - w / 2) * dirX + (pt.y - h / 2) * dirY; }
-      function across(pt) { return (pt.y - h / 2) * dirX - (pt.x - w / 2) * dirY; }
       function startEpisode(t) {
-        // Pick a direction through the centre of the page, then collect the dots
-        // that lead from one edge to the opposite edge along it.
-        var angle = Math.random() * 6.2832, j, cur = -1;
-        dirX = Math.cos(angle); dirY = Math.sin(angle);
-        for (j = 0; j < pts.length; j++) {
-          if (Math.abs(across(pts[j])) > GAP * 0.8) continue;
-          if (cur < 0 || along(pts[j]) < along(pts[cur])) cur = j;
-        }
-        if (cur < 0) return;
+        // Take one margin (left and right alternate) and collect the dots that
+        // lead from its top to its bottom.
+        var j, near = [];
+        side = !margins ? 0 : (side === -1 ? 1 : -1);
+        for (j = 0; j < pts.length; j++) if (pts[j].side === side && pts[j].y < GAP) near.push(j);
+        if (!near.length) return;
+        var cur = near[Math.floor(Math.random() * near.length)];
         var path = [cur];
         while (true) {
-          var near = [];
+          near = [];
           for (j = 0; j < pts.length; j++) {
-            if (along(pts[j]) - along(pts[cur]) < GAP * 0.4) continue;
-            if (Math.abs(across(pts[j])) > GAP * 0.9) continue;
+            if (pts[j].side !== side) continue;
             var dx = pts[j].x - pts[cur].x, dy = pts[j].y - pts[cur].y;
+            if (dy < GAP * 0.4 || Math.abs(dx) > dy * 1.3) continue;
             if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
           }
           if (!near.length) break;
