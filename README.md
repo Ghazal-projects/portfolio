@@ -37,77 +37,86 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: scattered dots stand for raw observations. Every so often a
-      // few neighbouring dots link up, one connection at a time, into a small
-      // structure, which holds for a moment and then dissolves.
+      // Background: scattered dots stand for raw observations. One structure at a
+      // time, neighbouring dots are connected one line after another, held for a
+      // moment, and then the lines dissolve one by one in the same order.
+      // Dots and lines stay in the page margins, clear of the text column.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 64, REACH = 105, MAX_NODES = 8, MAX_DEPTH = 3;
-      var STEP = 450, HOLD = 5200, FADE = 1400;
+      var GAP = 64, REACH = 105, MAX_NODES = 7, MAX_DEPTH = 3;
+      var STEP = 650, HOLD = 1600, OUT = 400, FADE = 600, PAUSE = 700;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, pts = [], eps = [], lastFrame = 0, lastStart = -9999;
+      var w = 0, h = 0, pts = [], ep = null, dim = 1, lastFrame = 0, nextStart = 0;
       function build() {
+        var left = -1, right = -1;
+        var column = document.querySelector('.wrapper');
+        if (column) {
+          var r = column.getBoundingClientRect();
+          if (w - r.width >= 260) { left = r.left - 24; right = r.right + 24; }
+        }
+        dim = left < 0 ? 0.55 : 1;
         pts = [];
         for (var x = GAP / 2; x < w; x += GAP) {
           for (var y = GAP / 2; y < h; y += GAP) {
-            pts.push({ x: x + (Math.random() - 0.5) * GAP * 0.8, y: y + (Math.random() - 0.5) * GAP * 0.8 });
+            var px = x + (Math.random() - 0.5) * GAP * 0.8;
+            var py = y + (Math.random() - 0.5) * GAP * 0.8;
+            if (px > left && px < right) continue;
+            pts.push({ x: px, y: py });
           }
         }
-        eps = [];
+        ep = null;
       }
       function startEpisode(t) {
         if (!pts.length) return;
         var seed = Math.floor(Math.random() * pts.length);
         var depth = {}; depth[seed] = 0;
-        var queue = [seed], nodes = [{ i: seed, d: 0 }], edges = [];
-        while (queue.length && nodes.length < MAX_NODES) {
+        var queue = [seed], count = 1, edges = [];
+        while (queue.length && count < MAX_NODES) {
           var c = queue.shift(), d = depth[c];
           if (d >= MAX_DEPTH) continue;
-          for (var j = 0; j < pts.length && nodes.length < MAX_NODES; j++) {
+          for (var j = 0; j < pts.length && count < MAX_NODES; j++) {
             if (depth[j] !== undefined) continue;
             var dx = pts[j].x - pts[c].x, dy = pts[j].y - pts[c].y;
             if (dx * dx + dy * dy > REACH * REACH || Math.random() > 0.6) continue;
             depth[j] = d + 1;
-            edges.push({ a: c, b: j, d: d });
-            nodes.push({ i: j, d: d + 1 });
+            edges.push({ a: c, b: j });
+            count++;
             queue.push(j);
           }
         }
-        if (edges.length >= 3) eps.push({ t0: t, nodes: nodes, edges: edges });
+        if (edges.length >= 3) ep = { t0: t, seed: seed, edges: edges };
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+      function dot(pt, radius, alpha) {
+        ctx.fillStyle = 'rgba(0,31,63,' + alpha + ')';
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
+        ctx.fill();
+      }
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = 'rgba(0,31,63,0.09)';
-        for (var i = 0; i < pts.length; i++) {
-          ctx.beginPath();
-          ctx.arc(pts[i].x, pts[i].y, 1.3, 0, 6.2832);
-          ctx.fill();
-        }
+        for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, 0.09 * dim);
+        if (!ep) return;
+        var n = ep.edges.length, age = t - ep.t0;
+        var outStart = n * STEP + HOLD;
+        if (age > outStart + (n - 1) * OUT + FADE) { ep = null; nextStart = t + PAUSE; return; }
         ctx.lineWidth = 1;
-        for (var k = eps.length - 1; k >= 0; k--) {
-          var ep = eps[k], age = t - ep.t0;
-          if (age > HOLD + FADE) { eps.splice(k, 1); continue; }
-          var f = age < HOLD ? 1 : 1 - (age - HOLD) / FADE;
-          for (var e = 0; e < ep.edges.length; e++) {
-            var ed = ep.edges[e], g = clamp((age - ed.d * STEP) / STEP);
-            if (g <= 0) continue;
-            var A = pts[ed.a], B = pts[ed.b];
-            ctx.strokeStyle = 'rgba(0,31,63,' + (0.2 * f) + ')';
-            ctx.beginPath();
-            ctx.moveTo(A.x, A.y);
-            ctx.lineTo(A.x + (B.x - A.x) * g, A.y + (B.y - A.y) * g);
-            ctx.stroke();
-          }
-          for (var n = 0; n < ep.nodes.length; n++) {
-            var nd = ep.nodes[n], q = clamp((age - nd.d * STEP) / 300) * f;
-            if (q <= 0) continue;
-            ctx.fillStyle = 'rgba(0,31,63,' + (0.3 * q) + ')';
-            ctx.beginPath();
-            ctx.arc(pts[nd.i].x, pts[nd.i].y, 1.3 + 1.4 * q, 0, 6.2832);
-            ctx.fill();
-          }
+        var lastGone = 1 - clamp((age - outStart - (n - 1) * OUT) / FADE);
+        dot(pts[ep.seed], 2.7, 0.3 * dim * clamp(age / 300) * lastGone);
+        for (var k = 0; k < n; k++) {
+          var grow = clamp((age - k * STEP) / STEP);
+          if (grow <= 0) break;
+          var keep = 1 - clamp((age - outStart - k * OUT) / FADE);
+          if (keep <= 0) continue;
+          var A = pts[ep.edges[k].a], B = pts[ep.edges[k].b];
+          ctx.strokeStyle = 'rgba(0,31,63,' + (0.22 * dim * keep) + ')';
+          ctx.beginPath();
+          ctx.moveTo(A.x, A.y);
+          ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
+          ctx.stroke();
+          var lit = clamp((grow - 0.8) / 0.2) * keep;
+          if (lit > 0) dot(B, 1.3 + 1.4 * lit, 0.3 * dim * lit);
         }
       }
       function resize() {
@@ -119,14 +128,14 @@
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         build();
         if (still) {
-          for (var i = 0; i < 4; i++) startEpisode(0);
-          draw(HOLD - 1);
+          for (var i = 0; i < 20 && !ep; i++) startEpisode(0);
+          draw(ep ? ep.edges.length * STEP + 1 : 0);
         }
       }
       function tick(t) {
         if (t - lastFrame > 33) {
           lastFrame = t;
-          if (t - lastStart > 1800 && eps.length < 4) { lastStart = t; startEpisode(t); }
+          if (!ep && t >= nextStart) startEpisode(t);
           draw(t);
         }
         window.requestAnimationFrame(tick);
@@ -180,7 +189,7 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 - **Security:** SSH logs hold millions of attempts and little direct evidence of intent. Looking at attacker populations instead of single events reveals who is attacking, and when independently trained learners disagree about an attacker, that disagreement is itself an early sign of a campaign in transition.
 - **Across all three:** the useful signals took similar shapes in fields that rarely cite one another, which is the question I most want to keep exploring.
 
-A paper-by-paper account is in the [Research Overview](research.md).
+The bigger picture is in the [Research Overview](research.md).
 
 -------------------------------------------------
 ## 📄 Publications
