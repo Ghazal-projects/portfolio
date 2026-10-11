@@ -27,7 +27,9 @@ I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu
 
 **On the academic job market, 2026–27** (tenure-track and postdoctoral positions).
 
-[Research Overview →](research.md) &nbsp;|&nbsp; [CV (PDF) →](assets/Ghazal_Abdollahi_CV.pdf)
+[Research Overview →](research.md)
+
+A short version of my CV is [here (PDF)](assets/Ghazal_Abdollahi_CV.pdf).
 
 <div align="center">
   <img src="assets/MEB.JPG" width="400">
