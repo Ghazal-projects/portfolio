@@ -1,8 +1,9 @@
 <body>
   <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);z-index:9998;display:flex;align-items:center;justify-content:center;">
-    <div id="notif" style="background:#001f3f;color:#fff;padding:30px 50px;border-radius:12px;font-size:22px;font-weight:bold;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.5);max-width:90%;position:relative;">
-      <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#ccc;">✕</span>
-     🎯 Status = ACTIVELY looking for a Postdoc/Tenure-track position to turn creative ideas into impact!
+    <div id="notif" style="background:#fff;color:#222;padding:28px 40px 26px;border-radius:8px;border-top:4px solid #001f3f;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.3);max-width:440px;width:90%;box-sizing:border-box;position:relative;">
+      <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#888;" aria-label="Close">✕</span>
+      <div style="font-size:20px;font-weight:600;color:#001f3f;margin-bottom:10px;">On the academic job market, 2026–27</div>
+      <div style="font-size:16px;line-height:1.5;">Seeking tenure-track faculty and postdoctoral positions.<br>Expected Ph.D. completion: March 2027.</div>
     </div>
   </div>
   <script>
@@ -40,7 +41,7 @@ I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu
 
 I'm open to research collaborations in my research areas. Feel free to reach out through my email!
 
-**Status = ACTIVELY seeking POSTDOC and TENURE-TRACK opportunities 🔭**
+**Status:** seeking tenure-track faculty and postdoctoral positions starting in 2027.
 
 -------------------------------------------------
 ## 💡 What My Papers Have Taught Me
