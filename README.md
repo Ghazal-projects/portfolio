@@ -87,15 +87,16 @@ Published papers are also on [Google Scholar](https://scholar.google.com/citatio
 
 **Teaching Assistant**, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026). Instructors: Prof. H. James de St. Germain, Prof. David Bean, and Prof. Fengjiao Wang.
 
-This semester I am one of five TAs for a 224-student senior capstone course. I read and ranked close to 200 project proposals during team formation, and I now meet each of my ten assigned teams for thirty minutes every week to press on data, novelty, scope, and milestones, including projects sponsored by WebBank and the Huntsman Cancer Institute. Staying with a team's idea week after week and helping it become something real has been the best part of the semester.
+Before the semester began I read and ranked close to 200 project proposals for a class of 224 seniors. Then ten of those proposals became my teams, and the ideas had faces. I meet each team for thirty minutes every week and bring the questions I ask of my own research: Does the data this project depends on actually exist? What is new here that existing applications do not already offer? What will be real by the next milestone? Some of the projects have outside sponsors, including WebBank and the Huntsman Cancer Institute, which connects the work to a purpose beyond the classroom.
 
-How I try to teach:
+What these weeks have taught me about teaching:
 
-- **A question teaches more than an answer.** The questions I bring to each weekly meeting leave the thinking with the team.
-- **Students should know what counts before they begin.** Stated expectations make feedback fair and usable.
-- **Teaching adapts to the people in the room.** Each team's chemistry tells me when to ask more, when to ask less, and how to rebalance the load.
+- **Ask before telling.** A good question leaves the thinking with the team. Some students open up with more questions, and others need fewer of them and more room.
+- **Say what counts before the work starts.** With 224 students and five graders, clear expectations are what make feedback fair.
+- **Judge a project by what it is becoming.** Teams spend most of a semester with nothing finished to show, and an early verdict can end an idea that was about to become good.
+- **Teach the layer above the prototype.** A team can reach a prototype quickly today, so my time goes to what a tool cannot generate: data, novelty, and scope.
 
-I am prepared to teach computer networks, network security, and cloud and distributed systems at the undergraduate and graduate levels.
+**Courses I would love to teach:** data mining, machine learning, advanced artificial intelligence, and network security, as well as computer networks and cloud and distributed systems. I would also like to build a project-based course in which students collect their own data and defend what it can and cannot support.
 
 ## 🤝 Service
 
