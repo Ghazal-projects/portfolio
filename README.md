@@ -37,14 +37,79 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: a quiet grid of dots with a slow wave passing through it,
-      // so a pattern keeps forming and dissolving behind the page.
+      // Background: scattered dots stand for raw observations. Every so often a
+      // few neighbouring dots link up, one connection at a time, into a small
+      // structure, which holds for a moment and then dissolves.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var gap = 30;
+      var GAP = 64, REACH = 105, MAX_NODES = 8, MAX_DEPTH = 3;
+      var STEP = 450, HOLD = 5200, FADE = 1400;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, last = 0;
+      var w = 0, h = 0, pts = [], eps = [], lastFrame = 0, lastStart = -9999;
+      function build() {
+        pts = [];
+        for (var x = GAP / 2; x < w; x += GAP) {
+          for (var y = GAP / 2; y < h; y += GAP) {
+            pts.push({ x: x + (Math.random() - 0.5) * GAP * 0.8, y: y + (Math.random() - 0.5) * GAP * 0.8 });
+          }
+        }
+        eps = [];
+      }
+      function startEpisode(t) {
+        if (!pts.length) return;
+        var seed = Math.floor(Math.random() * pts.length);
+        var depth = {}; depth[seed] = 0;
+        var queue = [seed], nodes = [{ i: seed, d: 0 }], edges = [];
+        while (queue.length && nodes.length < MAX_NODES) {
+          var c = queue.shift(), d = depth[c];
+          if (d >= MAX_DEPTH) continue;
+          for (var j = 0; j < pts.length && nodes.length < MAX_NODES; j++) {
+            if (depth[j] !== undefined) continue;
+            var dx = pts[j].x - pts[c].x, dy = pts[j].y - pts[c].y;
+            if (dx * dx + dy * dy > REACH * REACH || Math.random() > 0.6) continue;
+            depth[j] = d + 1;
+            edges.push({ a: c, b: j, d: d });
+            nodes.push({ i: j, d: d + 1 });
+            queue.push(j);
+          }
+        }
+        if (edges.length >= 3) eps.push({ t0: t, nodes: nodes, edges: edges });
+      }
+      function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+      function draw(t) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(0,31,63,0.09)';
+        for (var i = 0; i < pts.length; i++) {
+          ctx.beginPath();
+          ctx.arc(pts[i].x, pts[i].y, 1.3, 0, 6.2832);
+          ctx.fill();
+        }
+        ctx.lineWidth = 1;
+        for (var k = eps.length - 1; k >= 0; k--) {
+          var ep = eps[k], age = t - ep.t0;
+          if (age > HOLD + FADE) { eps.splice(k, 1); continue; }
+          var f = age < HOLD ? 1 : 1 - (age - HOLD) / FADE;
+          for (var e = 0; e < ep.edges.length; e++) {
+            var ed = ep.edges[e], g = clamp((age - ed.d * STEP) / STEP);
+            if (g <= 0) continue;
+            var A = pts[ed.a], B = pts[ed.b];
+            ctx.strokeStyle = 'rgba(0,31,63,' + (0.2 * f) + ')';
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(A.x + (B.x - A.x) * g, A.y + (B.y - A.y) * g);
+            ctx.stroke();
+          }
+          for (var n = 0; n < ep.nodes.length; n++) {
+            var nd = ep.nodes[n], q = clamp((age - nd.d * STEP) / 300) * f;
+            if (q <= 0) continue;
+            ctx.fillStyle = 'rgba(0,31,63,' + (0.3 * q) + ')';
+            ctx.beginPath();
+            ctx.arc(pts[nd.i].x, pts[nd.i].y, 1.3 + 1.4 * q, 0, 6.2832);
+            ctx.fill();
+          }
+        }
+      }
       function resize() {
         var ratio = window.devicePixelRatio || 1;
         w = window.innerWidth;
@@ -52,24 +117,18 @@
         canvas.width = w * ratio;
         canvas.height = h * ratio;
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        draw(last);
-      }
-      function draw(t) {
-        ctx.clearRect(0, 0, w, h);
-        for (var x = gap / 2; x < w; x += gap) {
-          for (var y = gap / 2; y < h; y += gap) {
-            var a = Math.sin(x * 0.011 + y * 0.006 - t * 0.00035);
-            var b = Math.sin(x * 0.004 - y * 0.009 + t * 0.00022);
-            var v = Math.max(0, (a + b) / 2);
-            ctx.beginPath();
-            ctx.arc(x, y, 1 + 1.6 * v * v, 0, 6.2832);
-            ctx.fillStyle = 'rgba(0,31,63,' + (0.05 + 0.13 * v * v) + ')';
-            ctx.fill();
-          }
+        build();
+        if (still) {
+          for (var i = 0; i < 4; i++) startEpisode(0);
+          draw(HOLD - 1);
         }
       }
       function tick(t) {
-        if (t - last > 50) { last = t; draw(t); }
+        if (t - lastFrame > 33) {
+          lastFrame = t;
+          if (t - lastStart > 1800 && eps.length < 4) { lastStart = t; startEpisode(t); }
+          draw(t);
+        }
         window.requestAnimationFrame(tick);
       }
       window.addEventListener('resize', resize);
