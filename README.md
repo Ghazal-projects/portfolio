@@ -34,6 +34,49 @@
       });
     })();
   </script>
+  <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
+  <script>
+    (function () {
+      // Background: a quiet grid of dots with a slow wave passing through it,
+      // so a pattern keeps forming and dissolving behind the page.
+      var canvas = document.getElementById('bgPattern');
+      if (!canvas || !canvas.getContext) return;
+      var ctx = canvas.getContext('2d');
+      var gap = 30;
+      var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var w = 0, h = 0, last = 0;
+      function resize() {
+        var ratio = window.devicePixelRatio || 1;
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = w * ratio;
+        canvas.height = h * ratio;
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        draw(last);
+      }
+      function draw(t) {
+        ctx.clearRect(0, 0, w, h);
+        for (var x = gap / 2; x < w; x += gap) {
+          for (var y = gap / 2; y < h; y += gap) {
+            var a = Math.sin(x * 0.011 + y * 0.006 - t * 0.00035);
+            var b = Math.sin(x * 0.004 - y * 0.009 + t * 0.00022);
+            var v = Math.max(0, (a + b) / 2);
+            ctx.beginPath();
+            ctx.arc(x, y, 1 + 1.6 * v * v, 0, 6.2832);
+            ctx.fillStyle = 'rgba(0,31,63,' + (0.05 + 0.13 * v * v) + ')';
+            ctx.fill();
+          }
+        }
+      }
+      function tick(t) {
+        if (t - last > 50) { last = t; draw(t); }
+        window.requestAnimationFrame(tick);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+      if (!still) window.requestAnimationFrame(tick);
+    })();
+  </script>
 </body>
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
