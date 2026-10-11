@@ -15,6 +15,7 @@
       var overlay = document.getElementById('notifOverlay');
       var card = document.getElementById('notif');
       window.closeNotif = function () {
+        window.popupClosed = true;
         card.style.opacity = '0';
         card.style.transform = 'translate(-50%,-44%)';
         overlay.style.background = 'rgba(0,31,63,0)';
@@ -40,7 +41,8 @@
       // Background: faint scattered dots across the page stand for raw observations.
       // One chain at a time, neighbouring dots are connected one line after
       // another, held for a moment, and then the lines dissolve one by one in the
-      // same order. The lines stay in the page margins, clear of the text column.
+      // same order. Chains can form anywhere; behind the text column they are paler.
+      // Chains only start once the status popup has been closed.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
@@ -68,16 +70,14 @@
       }
       function startEpisode(t) {
         // A single chain: each new line starts from the dot the last one reached.
-        // Only dots outside the text column can be linked.
         if (!pts.length) return;
         var seed = Math.floor(Math.random() * pts.length);
-        if (!pts[seed].edge) return;
         var used = {}; used[seed] = true;
         var cur = seed, edges = [];
         while (edges.length < MAX_NODES - 1) {
           var near = [];
           for (var j = 0; j < pts.length; j++) {
-            if (used[j] || !pts[j].edge) continue;
+            if (used[j]) continue;
             var dx = pts[j].x - pts[cur].x, dy = pts[j].y - pts[cur].y;
             if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
           }
@@ -105,20 +105,21 @@
         if (age > outStart + (n - 1) * OUT + FADE) { ep = null; nextStart = t + PAUSE; return; }
         ctx.lineWidth = 1;
         var lastGone = 1 - clamp((age - outStart - (n - 1) * OUT) / FADE);
-        dot(pts[ep.seed], 2.7, 0.3 * dim * clamp(age / 300) * lastGone);
+        dot(pts[ep.seed], 2.7, (pts[ep.seed].edge ? 0.3 : 0.16) * dim * clamp(age / 300) * lastGone);
         for (var k = 0; k < n; k++) {
           var grow = clamp((age - k * STEP) / STEP);
           if (grow <= 0) break;
           var keep = 1 - clamp((age - outStart - k * OUT) / FADE);
           if (keep <= 0) continue;
           var A = pts[ep.edges[k].a], B = pts[ep.edges[k].b];
-          ctx.strokeStyle = 'rgba(0,31,63,' + (0.22 * dim * keep) + ')';
+          var soft = (A.edge && B.edge) ? 1 : 0.55;
+          ctx.strokeStyle = 'rgba(0,31,63,' + (0.22 * dim * soft * keep) + ')';
           ctx.beginPath();
           ctx.moveTo(A.x, A.y);
           ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
           ctx.stroke();
           var lit = clamp((grow - 0.8) / 0.2) * keep;
-          if (lit > 0) dot(B, 1.3 + 1.4 * lit, 0.3 * dim * lit);
+          if (lit > 0) dot(B, 1.3 + 1.4 * lit, 0.3 * dim * soft * lit);
         }
       }
       function resize() {
@@ -137,7 +138,7 @@
       function tick(t) {
         if (t - lastFrame > 33) {
           lastFrame = t;
-          if (!ep && t >= nextStart) startEpisode(t);
+          if (!ep && window.popupClosed && t >= nextStart) startEpisode(t);
           draw(t);
         }
         window.requestAnimationFrame(tick);
