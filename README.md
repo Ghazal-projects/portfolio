@@ -50,12 +50,10 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 - **Security:** SSH logs hold millions of attempts and little direct evidence of intent. Looking at attacker populations instead of single events reveals who is attacking, and when independently trained learners disagree about an attacker, that disagreement is itself an early sign of a campaign in transition.
 - **Across all three:** the useful signals took similar shapes in fields that rarely cite one another, which is the question I most want to keep exploring.
 
-**Right now** I am revising the journal version of WarmFlex, carrying two papers through review, and writing my dissertation. A paper-by-paper account is in the [Research Overview](research.md).
+A paper-by-paper account is in the [Research Overview](research.md).
 
 -------------------------------------------------
 ## 📄 Publications
-
-### Accepted / Published
 
 - **Vertex: Towards Recommender Firewalls Resilient to Post-Detection Evasion** — poster, ACM IMC 2026
 - **EPIC: When Learners Disagree, Campaigns Speak; Perceiving Structure in Unfolding SSH Episodes** — poster, ACM SIGCOMM 2026
@@ -65,15 +63,6 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 - **Atomic Resolution Mapping and Electrochemical Analysis of Illicit Drug-Aptamer Complexes and Their Terahertz Signatures** — IEEE NMDC 2025
 - **FMap: A Fuzzy Map for Scheduling Elephant Flows Through Jumping** — Concurrency and Computation: Practice and Experience
 - **Flow-Aware Forwarding in SDN Data Centers Using a Knapsack-PSO-Based Solution** — IEEE Transactions on Network and Service Management
-
-### Under Review
-
-These are not yet published. Each is listed with the venue where it is under review.
-
-- **Graspic: Grasping the Momentum of Forming SSH Attack Phenotypes Toward Agentic Defense** — under review, AIDC '26 Workshop at ACSAC 2026
-- **Ignite: A Comprehensive Runtime Framework for Cold-Start and Idle Container Co-Optimization in Serverless Platforms** — under revision, IEEE Transactions on Network and Service Management (journal version of WarmFlex)
-- **What Crystallizes When Domain-Specific Semantics Evaporate, and Can Defender Agents See It?** — under review, AIDC '26 Workshop at ACSAC 2026
-- **Microfabricated Aptamer-Based Wearable Biosensor with Gradient Boosting for Real-Time THC Detection and TinyML Implementation** — under review, IEEE MEMS 2027
 
 Published papers are also on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
 
@@ -166,7 +155,7 @@ Here are photos I took during my visit to Yellowstone in Spring 2025:
 
 ## 🧘 Outside of Research
 
-Yoga and meditation are how I reset. I practice regularly at CorePower Yoga, where Core Restore is my favorite class, and I love a good sound bath. Slowing down on the mat is often where a stuck research idea loosens up.
+Yoga and meditation are how I reset. I practice regularly at CorePower Yoga, where Core Restore is my favorite class, and I love a good sound bath. They keep me grounded, and they remind me that clarity comes from stillness as much as from effort.
 
 -------------------------------------------------
 
