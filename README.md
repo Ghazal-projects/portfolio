@@ -39,9 +39,9 @@
   <script>
     (function () {
       // Background: a sparse field of faint dots. A single thread travels slowly
-      // across the page from left to right, joining one dot to the next, while
-      // the line it leaves behind dissolves a few steps later. When it reaches
-      // the right edge, a new thread begins on the left at another height.
+      // across the whole page through its centre, joining one dot to the next,
+      // while the line it leaves behind dissolves a few steps later. When it
+      // reaches the far edge, a new thread crosses in a different direction.
       // The thread starts once the status popup has been closed, and is paler
       // where it passes behind the text column.
       var canvas = document.getElementById('bgPattern');
@@ -51,7 +51,7 @@
       var STEP = 1100, LIFE = 2600, FADE = 2200, PAUSE = 1200;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], segs = [], head = -1, dim = 1;
-      var lastFrame = 0, busyUntil = 0, nextStart = 0;
+      var lastFrame = 0, busyUntil = 0, nextStart = 0, dirX = 1, dirY = 0;
       function build() {
         var left = -1, right = -1;
         var column = document.querySelector('.wrapper');
@@ -70,19 +70,27 @@
         }
         segs = []; head = -1;
       }
+      function along(pt) { return (pt.x - w / 2) * dirX + (pt.y - h / 2) * dirY; }
+      function across(pt) { return (pt.y - h / 2) * dirX - (pt.x - w / 2) * dirY; }
       function advance(t) {
         var j, near = [];
         if (head < 0) {
           if (!window.popupClosed || t < nextStart) return;
-          for (j = 0; j < pts.length; j++) if (pts[j].x < GAP) near.push(j);
-          if (!near.length) return;
-          head = near[Math.floor(Math.random() * near.length)];
-          near = [];
+          // New thread: pick a fresh direction through the centre of the page and
+          // start from the dot furthest back along it.
+          var angle = Math.random() * 6.2832;
+          dirX = Math.cos(angle); dirY = Math.sin(angle);
+          for (j = 0; j < pts.length; j++) {
+            if (Math.abs(across(pts[j])) > GAP * 0.8) continue;
+            if (head < 0 || along(pts[j]) < along(pts[head])) head = j;
+          }
+          if (head < 0) return;
         }
-        // Next dot: ahead of the current one, without climbing or dropping steeply.
+        // Next dot: further along the same direction, close to the centre line.
         for (j = 0; j < pts.length; j++) {
+          if (along(pts[j]) - along(pts[head]) < GAP * 0.4) continue;
+          if (Math.abs(across(pts[j])) > GAP * 0.9) continue;
           var dx = pts[j].x - pts[head].x, dy = pts[j].y - pts[head].y;
-          if (dx < GAP * 0.4 || Math.abs(dy) > dx * 1.1) continue;
           if (dx * dx + dy * dy <= REACH * REACH) near.push(j);
         }
         if (!near.length) { head = -1; nextStart = t + LIFE + PAUSE; return; }
