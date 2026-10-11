@@ -1,6 +1,6 @@
 <body>
   <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:transparent;z-index:9998;display:flex;align-items:center;justify-content:center;">
-    <div id="notif" style="background:rgba(255,255,255,0.85);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(0,31,63,0.25);color:#111;padding:26px 44px 24px;border-radius:8px;border-top:4px solid #001f3f;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,0.12);width:max-content;max-width:92vw;box-sizing:border-box;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;text-wrap:balance;">
+    <div id="notif" style="background:rgba(255,255,255,0.96);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,31,63,0.25);color:#111;padding:26px 44px 24px;border-radius:8px;border-top:4px solid #001f3f;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,0.25);width:max-content;max-width:92vw;box-sizing:border-box;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;text-wrap:balance;">
       <span onclick="document.getElementById('notifOverlay').style.display='none'" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;" aria-label="Close">✕</span>
       <div style="font-size:20px;font-weight:600;color:#001f3f;margin-bottom:8px;">On the academic job market, 2026–27</div>
       <div style="font-size:16px;line-height:1.5;">Seeking tenure-track faculty and postdoctoral positions</div>
@@ -96,7 +96,7 @@ What these weeks have taught me about teaching:
 - **Judge a project by what it is becoming.** Teams spend most of a semester with nothing finished to show, and an early verdict can end an idea that was about to become good.
 - **Teach the layer above the prototype.** A team can reach a prototype quickly today, so my time goes to what a tool cannot generate: data, novelty, and scope.
 
-**Courses I would love to teach:** data mining, machine learning, advanced artificial intelligence, and network security, as well as computer networks and cloud and distributed systems. I would also like to build a project-based course in which students collect their own data and defend what it can and cannot support.
+**Courses I would love to teach:** Data Mining, Machine Learning, Advanced Artificial Intelligence, Network Security, Computer Networks, and Cloud and Distributed Systems. I would also like to build a project-based course in which students collect their own data and defend what it can and cannot support.
 
 ## 🤝 Service
 
