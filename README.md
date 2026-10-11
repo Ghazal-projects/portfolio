@@ -24,39 +24,25 @@
 
 I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research is about how computing systems can notice what is forming in their own data early enough to act on it, in a way people can follow. I call this Interpretable Signal-to-Control (O→S→C: observation, signal, control), and I have developed it in serverless computing, data center networking, and network security.
 
-**On the academic job market, 2026–27** (tenure-track and postdoctoral positions).
+**On the academic job market, 2026–27** (tenure-track and postdoctoral positions). I expect to graduate by March 2027.
 
-Read more about my research approach here:
-[Research Overview →](research.md)
+[Research Overview →](research.md) &nbsp;|&nbsp; [CV (PDF) →](assets/Ghazal_Abdollahi_CV.pdf)
 
 <div align="center">
   <img src="assets/MEB.JPG" width="400">
   <br>
   <em>Photo taken at MEB, my office building, Summer 2026.</em>
-
-  
 </div>
 
-
-
-I love how this quote makes sense in my research process:
-  "It goes always, bit by bit. You don't see the whole thing at once.
-  The way it unfolds is anybody's guess. It's kind of a magical thing.
-  But eventually, it gets there. If you focus on it, it'll draw other
-  ideas in. And... but you don't know. Like fishing, you have to have
-  patience. You don't know how long it'll take. But if you keep
-  focusing on it, it'll... and wiggle the line a little bit, it'll
-  bring them in. Intuition is the intellect and emotions swimming
-  together." — David Lynch
-
-I'm open to research collaborations in my research areas. Feel free to reach out through my email!
 ## Contact
 
 **Email**: Ghazal [dot] Abdollahi [at] utah.edu
 
+I'm open to research collaborations in my research areas. Feel free to reach out through my email!
 
 **Status = ACTIVELY seeking POSTDOC and TENURE-TRACK opportunities 🔭**
 
+-------------------------------------------------
 ## 💡 What My Papers Have Taught Me
 
 - **Serverless:** cold starts and idle containers are one problem, not two. Reading how long a function runs and how soon it will be called again lets a platform steady both at once, with rules an operator can read line by line.
@@ -64,10 +50,70 @@ I'm open to research collaborations in my research areas. Feel free to reach out
 - **Security:** SSH logs hold millions of attempts and little direct evidence of intent. Looking at attacker populations instead of single events reveals who is attacking, and when independently trained learners disagree about an attacker, that disagreement is itself an early sign of a campaign in transition.
 - **Across all three:** the useful signals took similar shapes in fields that rarely cite one another, which is the question I most want to keep exploring.
 
-The papers themselves are on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
+**Right now** I am revising the journal version of WarmFlex, carrying two papers through review, and writing my dissertation. A paper-by-paper account is in the [Research Overview](research.md).
 
-<h3>Teaching Experience</h3>
-<p><strong>Teaching Assistant</strong>, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026): This semester I am one of five TAs for a 224-student senior capstone course. I read and ranked close to 200 project proposals during team formation, and I now meet each of my ten assigned teams for thirty minutes every week to press on data, novelty, scope, and milestones, including projects sponsored by WebBank and the Huntsman Cancer Institute. Staying with a team's idea week after week and helping it become something real has been the best part of the semester.</p>
+-------------------------------------------------
+## 📄 Publications
+
+### Accepted / Published
+
+- **Vertex: Towards Recommender Firewalls Resilient to Post-Detection Evasion** — poster, ACM IMC 2026
+- **EPIC: When Learners Disagree, Campaigns Speak; Perceiving Structure in Unfolding SSH Episodes** — poster, ACM SIGCOMM 2026
+- **Combo: Proactive Momentum and the Reactive Wall** — ACM NetNeg (Workshop on Negative Results in Networking), SIGCOMM 2026
+- **WarmFlex: Coordinated Stabilization of Cold-Start Frequency and Idle Containers in Serverless Platforms** — IEEE SmartCloud 2026
+- **NOD: Uncovering Intense Attackers' Behavior Through Nested Outlier Detection from SSH Logs** — PRISM Workshop, NDSS 2026
+- **Atomic Resolution Mapping and Electrochemical Analysis of Illicit Drug-Aptamer Complexes and Their Terahertz Signatures** — IEEE NMDC 2025
+- **FMap: A Fuzzy Map for Scheduling Elephant Flows Through Jumping** — Concurrency and Computation: Practice and Experience
+- **Flow-Aware Forwarding in SDN Data Centers Using a Knapsack-PSO-Based Solution** — IEEE Transactions on Network and Service Management
+
+### Under Review
+
+These are not yet published. Each is listed with the venue where it is under review.
+
+- **Graspic: Grasping the Momentum of Forming SSH Attack Phenotypes Toward Agentic Defense** — under review, AIDC '26 Workshop at ACSAC 2026
+- **Ignite: A Comprehensive Runtime Framework for Cold-Start and Idle Container Co-Optimization in Serverless Platforms** — under revision, IEEE Transactions on Network and Service Management (journal version of WarmFlex)
+- **What Crystallizes When Domain-Specific Semantics Evaporate, and Can Defender Agents See It?** — under review, AIDC '26 Workshop at ACSAC 2026
+- **Microfabricated Aptamer-Based Wearable Biosensor with Gradient Boosting for Real-Time THC Detection and TinyML Implementation** — under review, IEEE MEMS 2027
+
+Published papers are also on [Google Scholar](https://scholar.google.com/citations?hl=en&user=d8byHrIAAAAJ).
+
+-------------------------------------------------
+## 🎓 Education
+
+- **Ph.D. candidate in Computer Science**, University of Utah, Salt Lake City, UT (Fall 2022 – present). Kahlert School of Computing, Flux Research Group. Advisor: [Prof. Robert Ricci](https://ricci.io).
+- **M.Sc. in Information Technology Engineering – Computer Networks**, Salman Institute of Higher Education, Mashhad, Iran
+- **B.Sc. in Information Technology Engineering**, Payame Noor University, Iran
+
+## 🏅 Grants & Awards
+
+- **N2Women Travel Grant**, ACM MobiCom 2026, Austin, TX
+- **Conference Travel Grants**: ACM RecSys 2026, USENIX PEPR '26, NSDI 2025, KubeCon 2024, and ACM CCS 2024
+
+## 🔬 Experience
+
+- **ML-based Biomedical Detection Intern**, ECE Department, University of Utah (Summer 2024, Summer 2026). Supervisor: [Prof. Massood Tabib-Azar](https://profiles.faculty.utah.edu/u0640514), [AMANDA Lab](https://amanda.ece.utah.edu/people/). I built machine-learning classification for a wearable THC biosensor and brought the model onto a small, resource-limited microcontroller so that it runs on the device itself.
+
+## 🧑‍🏫 Teaching
+
+**Teaching Assistant**, CS 4000 – Senior Capstone Design, University of Utah (Fall 2026). Instructors: Prof. H. James de St. Germain, Prof. David Bean, and Prof. Fengjiao Wang.
+
+This semester I am one of five TAs for a 224-student senior capstone course. I read and ranked close to 200 project proposals during team formation, and I now meet each of my ten assigned teams for thirty minutes every week to press on data, novelty, scope, and milestones, including projects sponsored by WebBank and the Huntsman Cancer Institute. Staying with a team's idea week after week and helping it become something real has been the best part of the semester.
+
+How I try to teach:
+
+- **A question teaches more than an answer.** The questions I bring to each weekly meeting leave the thinking with the team.
+- **Students should know what counts before they begin.** Stated expectations make feedback fair and usable.
+- **Teaching adapts to the people in the room.** Each team's chemistry tells me when to ask more, when to ask less, and how to rebalance the load.
+
+I am prepared to teach computer networks, network security, and cloud and distributed systems at the undergraduate and graduate levels.
+
+## 🤝 Service
+
+- **Volunteer Reviewer**: IEEE Transactions on Network and Service Management
+- **Volunteer Reviewer**: Future Generation Computer Systems (Elsevier)
+- **Artifact Evaluation**: ACM SIGMETRICS 2026 (shadow reviewer)
+- **Artifact Evaluation**: IEEE ICPE
+- **Student Volunteer**: PMAPS 2026, Salt Lake City, UT
 
 -------------------------------------------------
 ## 🌐 Conferences & Workshops
@@ -89,6 +135,24 @@ Conferences, workshops, and summits I have **presented/attended** at:
 - **ML & Big Data HPC Workshop** — INSCC, University of Utah, USA
 
 -------------------------------------------------
+## 🛠 Key Skills
+
+Cloud and serverless computing · container orchestration · cold-start and idle-resource optimization · data center networking · software-defined networking (SDN) · flow scheduling and forwarding · AI/ML for networking and security · interpretable/explainable AI · anomaly and intrusion detection · attacker behavior and security log analysis · workload characterization · embedded and edge machine learning
+
+-------------------------------------------------
+## 🎣 A Quote I Keep Close
+
+I love how this quote makes sense in my research process:
+  "It goes always, bit by bit. You don't see the whole thing at once.
+  The way it unfolds is anybody's guess. It's kind of a magical thing.
+  But eventually, it gets there. If you focus on it, it'll draw other
+  ideas in. And... but you don't know. Like fishing, you have to have
+  patience. You don't know how long it'll take. But if you keep
+  focusing on it, it'll... and wiggle the line a little bit, it'll
+  bring them in. Intuition is the intellect and emotions swimming
+  together." — David Lynch
+
+-------------------------------------------------
 ## 📍 Salt Lake City, Utah, USA
 
 Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genuinely nice people. You’re only minutes to hours from spectacular landscapes; national parks like [Yellowstone](https://www.nps.gov/yell/index.htm) (not in Utah, but much closer from here), lakes such as Mirror Lake and Silver Lake, and many outdoor trails. It’s an ideal place for a PhD student who wants to live close to nature and far from the hustle and bustle of a crowded city.
@@ -97,6 +161,12 @@ Salt Lake City is a quiet mountain city surrounded by peaceful scenery and genui
 ## 📸 Gallery
 Here are photos I took during my visit to Yellowstone in Spring 2025:
 [Yellowstone — Spring 2025](gallery.html)
+
+-------------------------------------------------
+
+## 🧘 Outside of Research
+
+Yoga and meditation are how I reset. I practice regularly at CorePower Yoga, where Core Restore is my favorite class, and I love a good sound bath. Slowing down on the mat is often where a stuck research idea loosens up.
 
 -------------------------------------------------
 
@@ -111,6 +181,3 @@ Here are photos I took during my visit to Yellowstone in Spring 2025:
   _A guide to making the most important work feel lighter, not harder._
 
 -------------------------------------------------
-
-
-
