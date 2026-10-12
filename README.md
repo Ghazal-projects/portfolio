@@ -393,4 +393,7 @@ Yoga and meditation are how I reset. I practice regularly at CorePower Yoga, whe
 - **[Effortless — Greg McKeown](https://www.amazon.com/Effortless-Make-Easier-What-Matters/dp/B08FMTSZLN/)**  
   _A guide to making the most important work feel lighter, not harder._
 
+- **[Being the Best (persian book) – Masoud Malekyari](https://ketabrah.com/book/60237)**  
+  _A little flute loses its notes and creates a new song. Great work is not made from perfect conditions, but from turning limits into new strengths._
+
 -------------------------------------------------
