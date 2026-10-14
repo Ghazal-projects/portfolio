@@ -306,20 +306,38 @@
     #storyCard .x{position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;background:none;border:0;padding:4px;}
     #storyCard .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6b7a8c;margin-bottom:10px;}
     #storyArt{display:block;width:100%;height:auto;margin:0 0 14px;}
-    #storyArt .g-dots{opacity:0;transition:opacity .7s ease;}
-    #storyArt .g-try,#storyArt .g-path{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:1;transition:stroke-dashoffset 1.4s ease,opacity .8s ease,stroke-width .8s ease;}
-    #storyArt .g-try{stroke-width:1.5;opacity:.55;}
-    #storyArt .g-path{stroke-width:1.8;}
-    #storyArt .g-end{opacity:0;transition:opacity .6s ease .9s;}
-    #storyArt.a1 .g-dots{opacity:1;}
-    #storyArt.a2 .g-try{stroke-dashoffset:0;}
-    #storyArt.a2 .g-end{opacity:1;}
-    #storyArt.a3 .g-try,#storyArt.a3 .g-end{opacity:.14;transition-delay:0s;}
-    #storyArt.a4 .g-path{stroke-dashoffset:0;}
-    #storyArt.a5 .g-path{stroke-width:2.8;}
+    /* The drawing has one state per story step (s0 to s7), so it follows the text step by step. */
+    @keyframes storyPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.35);}}
+    #storyArt .pulse{transform-box:fill-box;transform-origin:center;}
+    #storyArt .g-dots{opacity:1;transition:opacity .7s ease;}
+    #storyArt.s1 .g-dots{opacity:0;}
+    #storyArt .g-reach{opacity:0;transition:opacity .6s ease;}
+    #storyArt.s2 .g-reach,#storyArt.s4 .g-reach{opacity:1;}
+    #storyArt .opt{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
+    #storyArt.s2 .opt,#storyArt.s4 .opt-a{opacity:.7;animation:storyPulse 1.6s ease-in-out infinite;}
+    #storyArt.s4 .opt-b{opacity:.2;}
+    #storyArt .g-try,#storyArt .seg{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:1;}
+    #storyArt .g-try{stroke-width:1.5;opacity:.55;transition:stroke-dashoffset 1.2s ease,opacity .8s ease;}
+    #storyArt.s3 .g-try,#storyArt.s4 .g-try,#storyArt.s5 .g-try,#storyArt.s6 .g-try,#storyArt.s7 .g-try{stroke-dashoffset:0;}
+    #storyArt.s4 .g-try,#storyArt.s5 .g-try,#storyArt.s6 .g-try,#storyArt.s7 .g-try{opacity:.14;}
+    #storyArt .g-end{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
+    #storyArt.s3 .g-end{opacity:.8;transition-delay:1.1s;animation:storyPulse 1.2s ease-in-out infinite;}
+    #storyArt.s4 .g-end{opacity:.14;}
+    #storyArt .seg{stroke-width:1.8;transition:stroke-dashoffset .8s ease,stroke-width .8s ease;}
+    #storyArt.s0 .seg,#storyArt.s5 .seg1,#storyArt.s5 .seg2,#storyArt.s5 .seg3,#storyArt.s6 .seg,#storyArt.s7 .seg{stroke-dashoffset:0;}
+    #storyArt.s5 .seg2{transition-delay:.9s;}
+    #storyArt.s5 .seg3{transition-delay:1.8s;}
+    #storyArt.s6 .seg{stroke-width:2.8;transition:stroke-dashoffset .8s ease,stroke-width .8s ease .8s;}
+    #storyArt.s7 .seg{stroke-width:2;}
+    #storyArt .hop{opacity:0;transition:opacity .3s ease;}
+    #storyArt.s0 .hop,#storyArt.s5 .hop,#storyArt.s6 .hop,#storyArt.s7 .hop{opacity:1;}
+    #storyArt.s5 .hop1{transition-delay:.8s;}
+    #storyArt.s5 .hop2{transition-delay:1.7s;}
+    #storyArt.s5 .hop3{transition-delay:2.6s;}
+    #storyArt .b-ring{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
+    #storyArt.s6 .b-ring{opacity:.6;transition-delay:.8s;animation:storyPulse 1.6s ease-in-out infinite;}
     #storyArt .g-many{fill:none;stroke:#001f3f;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s ease;}
-    #storyArt.a6 .g-many{opacity:.22;}
-    #storyArt.a6 .g-path{stroke-width:2;}
+    #storyArt.s7 .g-many{opacity:.22;}
     #storyText{transition:opacity .2s ease;min-height:132px;}
     #storyText .t{font-size:19px;font-weight:600;color:#001f3f;margin:0 0 6px;}
     #storyText .p{font-size:15.5px;line-height:1.6;margin:0;}
@@ -333,7 +351,7 @@
     #storyNav button{font:inherit;font-size:14px;font-weight:600;border-radius:5px;cursor:pointer;padding:6px 14px;}
     #storyBack{background:none;border:0;color:#001f3f;}
     #storyNext{background:#001f3f;color:#fff;border:1px solid #001f3f;margin-left:6px;}
-    @media (prefers-reduced-motion: reduce){#storyBtn,#storyCard,#storyArt *,#storyText,#storyOverlay{transition:none !important;}}
+    @media (prefers-reduced-motion: reduce){#storyBtn,#storyCard,#storyArt *,#storyText,#storyOverlay{transition:none !important;animation:none !important;}}
   </style>
   <button id="storyBtn" type="button" aria-label="Read a short story: Between A and B">
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="18" x2="13" y2="21" stroke="#001f3f" stroke-width="1.3" stroke-dasharray="2 2" opacity=".45"/><polyline points="4,18 11,7 20,12" fill="none" stroke="#001f3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="18" r="2.4" fill="#001f3f"/><circle cx="11" cy="7" r="1.7" fill="#001f3f"/><circle cx="20" cy="12" r="2.4" fill="#001f3f"/></svg>
@@ -344,11 +362,15 @@
       <button class="x" type="button" id="storyClose" aria-label="Close">✕</button>
       <div class="kicker">A data story by Ghazal · Between A and B</div>
       <svg id="storyArt" viewBox="0 0 300 96" aria-hidden="true">
+        <circle class="g-reach" cx="22" cy="60" r="85" fill="rgba(0,31,63,0.03)" stroke="rgba(0,31,63,0.35)" stroke-width="0.8" stroke-dasharray="3 3"/>
         <g class="g-dots" fill="rgba(0,31,63,0.35)"><circle cx="80" cy="30" r="2.6"/><circle cx="100" cy="74" r="2.6"/><circle cx="150" cy="58" r="2.6"/><circle cx="165" cy="22" r="2.6"/><circle cx="212" cy="72" r="2.6"/><circle cx="232" cy="38" r="2.6"/><circle cx="125" cy="40" r="2.6"/></g>
+        <circle class="opt opt-a pulse" cx="80" cy="30" r="6"/><circle class="opt opt-b pulse" cx="100" cy="74" r="6"/>
         <g class="g-many"><polyline points="22,60 100,74 212,72 278,44"/><polyline points="22,60 125,40 232,38 278,44"/><polyline points="22,60 80,30 150,58 232,38 278,44"/><polyline points="22,60 100,74 125,40 165,22 278,44"/><polyline points="22,60 150,58 212,72 278,44"/></g>
         <polyline class="g-try" pathLength="1" points="22,60 100,74 150,58"/>
-        <circle class="g-end" cx="150" cy="58" r="4.5" fill="none" stroke="#001f3f" stroke-width="1.2"/>
-        <polyline class="g-path" pathLength="1" points="22,60 80,30 165,22 232,38 278,44"/>
+        <circle class="g-end pulse" cx="150" cy="58" r="5"/>
+        <line class="seg seg1" pathLength="1" x1="22" y1="60" x2="80" y2="30"/><line class="seg seg2" pathLength="1" x1="80" y1="30" x2="165" y2="22"/><line class="seg seg3" pathLength="1" x1="165" y1="22" x2="232" y2="38"/><line class="seg seg4" pathLength="1" x1="232" y1="38" x2="278" y2="44"/>
+        <circle class="hop hop1" cx="80" cy="30" r="3.4" fill="#001f3f"/><circle class="hop hop2" cx="165" cy="22" r="3.4" fill="#001f3f"/><circle class="hop hop3" cx="232" cy="38" r="3.4" fill="#001f3f"/>
+        <circle class="b-ring pulse" cx="278" cy="44" r="9"/>
         <circle cx="22" cy="60" r="5" fill="#001f3f"/><circle cx="278" cy="44" r="5" fill="#001f3f"/>
         <text x="22" y="84" font-size="11" fill="#001f3f" text-anchor="middle" font-weight="600">A</text>
         <text x="278" y="30" font-size="11" fill="#001f3f" text-anchor="middle" font-weight="600">B</text>
@@ -364,7 +386,7 @@
     (function () {
       // "Between A and B": the same idea the margin dots act out, told one hop at a time.
       // The first step is the intro in my own voice; the drawing shows the finished path,
-      // then clears and replays from step two on.
+      // then clears and replays from step two on. Each step i has its own drawing state, s<i>.
       var steps = [
         { t: 'Why the dots?', p: 'Hi, I’m Ghazal. You may have noticed the faint dots in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.',
           pSmall: 'Hi, I’m Ghazal. On a larger screen, faint dots move in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.' },
@@ -383,9 +405,7 @@
       var i = 0, isOpen = false, swap = null;
       for (var k = 0; k < steps.length; k++) hops.innerHTML += (k ? '<i></i>' : '') + '<span></span>';
       function render(fade) {
-        var cls = i === 0 ? ['a1', 'a4'] : [];
-        for (var k = 1; k < i; k++) cls.push('a' + k);
-        art.setAttribute('class', cls.join(' '));
+        art.setAttribute('class', 's' + i);
         var marks = hops.children;
         for (var m = 0; m < marks.length; m++) marks[m].className = (m <= i * 2) ? 'on' : '';
         back.style.visibility = i ? 'visible' : 'hidden';
