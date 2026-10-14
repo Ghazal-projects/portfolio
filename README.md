@@ -39,23 +39,29 @@
   <script>
     (function () {
       // Background: sparse faint dots in the left and right page margins only,
-      // never behind the content. Each margin runs its own slow cycle:
-      //   1. two dots light up, somewhere in the margin, near or far apart;
-      //   2. a connection is tried from one toward the other, dot by dot. Often
-      //      it reaches a dead end, pauses, and fades away, and another way is
-      //      tried. This can happen up to three times; sometimes the first try
-      //      already works;
-      //   3. the try that reaches the other dot is kept. It glows gently and
-      //      then dissolves, and after a short rest a new pair is chosen.
+      // never behind the content. It acts out the "Between A and B" story.
+      // Each margin runs its own slow cycle:
+      //   1. two dots light up (point A and point B), near or far apart;
+      //   2. a connection is tried from one toward the other, one hop at a time.
+      //      Before each hop, the dots within reach glow softly: the little that
+      //      can be seen from where the line stands. Then it picks one;
+      //   3. often a try reaches a dead end. It pauses there (a small ring
+      //      pulses, unsure), then fades, leaving a faint trace of what it
+      //      learned, and the next try avoids that dead end. This can happen up
+      //      to three times; sometimes the first try already works;
+      //   4. the try that reaches the other dot glows gently and settles into a
+      //      very faint trace. Traces of earlier paths linger for a while, so
+      //      over time many paths add up to a pattern. Then a new pair is chosen.
       // It starts once the status popup has been closed. The margins follow the
       // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
       var GAP = 110, REACH = 210, MAX_FAILS = 3, QUICK = 0.3;
-      var ENDS = 900, STEP = 480, STALL = 400, GIVE_UP = 650, SHINE = 1300, FADE = 1400;
+      var ENDS = 900, LOOK = 380, STEP = 480, STALL = 900, GIVE_UP = 650, SHINE = 1300, FADE = 1400;
+      var HOP = LOOK + STEP, MEMORY = 120000, MEMORY_MAX = 8;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, pts = [], eps = [];
+      var w = 0, h = 0, pts = [], eps = [], memory = [];
       var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 };
       function fill(from, to, sideId) {
         // Spread dots evenly over one margin, however wide or narrow it is.
@@ -80,6 +86,7 @@
         // and phone widths) there are no dots at all.
         pts = [];
         eps = [];
+        memory = [];
         var column = document.querySelector('.wrapper');
         if (!column) return;
         var r = column.getBoundingClientRect();
@@ -90,20 +97,27 @@
       function gapBetween(i, j) {
         return Math.sqrt(Math.pow(pts[i].x - pts[j].x, 2) + Math.pow(pts[i].y - pts[j].y, 2));
       }
-      function makeRoute(from, to, side) {
+      function makeRoute(from, to, side, avoid) {
         // Wander from one end dot to the other in any direction, each hop
-        // landing a little closer to the target.
-        var cur = from, route = [from], used = {};
+        // landing a little closer to the target. Dead ends found by earlier
+        // tries are avoided. For each hop, the dots that were within reach
+        // (the options) are kept so they can glow before the choice is made.
+        var cur = from, route = [from], opts = [], used = {};
         used[from] = true;
         for (var guard = 0; guard < 40; guard++) {
           var left = gapBetween(cur, to), near = [];
           for (var j = 0; j < pts.length; j++) {
-            if (j === to || used[j] || pts[j].side !== side) continue;
+            if (j === to || used[j] || avoid[j] || pts[j].side !== side) continue;
             if (gapBetween(cur, j) <= REACH && gapBetween(j, to) < left - GAP * 0.15) near.push(j);
           }
           var canFinish = left <= REACH * 1.15;
-          if (canFinish && (!near.length || (route.length > 1 && Math.random() < 0.5))) { route.push(to); return route; }
+          if (canFinish && (!near.length || (route.length > 1 && Math.random() < 0.5))) {
+            opts.push(near.concat([to]));
+            route.push(to);
+            return { path: route, opts: opts };
+          }
           if (!near.length) return null;
+          opts.push(canFinish ? near.concat([to]) : near);
           cur = pick(near);
           used[cur] = true;
           route.push(cur);
@@ -128,24 +142,25 @@
         // Sometimes the decision is quick (no failed tries); otherwise one to
         // three different ways are tried and dropped first.
         var fails = Math.random() < QUICK ? 0 : 1 + Math.floor(Math.random() * MAX_FAILS);
-        var routes = [], seen = {};
-        for (var n = 0; n < 20 && routes.length < fails + 1; n++) {
-          var route = makeRoute(from, to, side);
-          if (!route || route.length < 3 || seen[route.join(',')]) continue;
-          seen[route.join(',')] = true;
-          routes.push(route);
-        }
-        if (!routes.length) return false;
-        var tries = [], clock = ENDS;
-        for (j = 0; j < routes.length; j++) {
-          var last = j === routes.length - 1;
-          var full = routes[j].length - 1;
-          // A failed try stops at a dead end part of the way along.
-          var hops = last ? full : 1 + Math.floor(Math.random() * (full - 1));
-          var reached = clock + hops * STEP;
-          tries.push({ route: routes[j], hops: hops, start: clock, reached: reached });
+        var tries = [], seen = {}, avoid = {}, clock = ENDS;
+        for (var n = 0; n < 30 && tries.length < fails + 1; n++) {
+          var r = makeRoute(from, to, side, avoid);
+          if (!r || r.path.length < 3 || seen[r.path.join(',')]) continue;
+          seen[r.path.join(',')] = true;
+          var full = r.path.length - 1;
+          var failed = tries.length < fails;
+          // A failed try stops at a dead end part of the way along, and the
+          // next tries learn to stay away from that dot.
+          var hops = failed ? 1 + Math.floor(Math.random() * (full - 1)) : full;
+          if (failed) avoid[r.path[hops]] = true;
+          var reached = clock + hops * HOP;
+          tries.push({ route: r.path, opts: r.opts, hops: hops, full: full, start: clock, reached: reached });
           clock = reached + STALL + GIVE_UP + 200;
         }
+        if (!tries.length) return false;
+        // If no try got all the way, let the last one finish.
+        var win = tries[tries.length - 1];
+        if (win.hops < win.full) { win.hops = win.full; win.reached = win.start + win.full * HOP; }
         eps.push({ t0: t, side: side, from: from, to: to, tries: tries });
         return true;
       }
@@ -156,13 +171,24 @@
         ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
         ctx.fill();
       }
-      function drawTry(tr, age, alpha, extra) {
-        ctx.lineWidth = 1 + 0.5 * extra;
-        ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
+      function ease(v) { return 0.5 - 0.5 * Math.cos(3.1416 * clamp(v)); }
+      function drawTry(tr, age, alpha, extra, looking) {
         for (var k = 0; k < tr.hops; k++) {
-          var grow = 0.5 - 0.5 * Math.cos(3.1416 * clamp((age - tr.start - k * STEP) / STEP));
+          var hopStart = tr.start + k * HOP;
+          if (age < hopStart) break;
+          if (looking) {
+            // Before the hop, the dots within reach glow while one is chosen.
+            var lp = (age - hopStart) / (LOOK + STEP * 0.6);
+            if (lp < 1) {
+              var g = Math.sin(3.1416 * lp), o = tr.opts[k];
+              for (var q = 0; q < o.length; q++) dot(pts[o[q]], 1.3 + 1.1 * g, 0.08 + 0.2 * g);
+            }
+          }
+          var grow = ease((age - hopStart - LOOK) / STEP);
           if (grow <= 0) break;
           var A = pts[tr.route[k]], B = pts[tr.route[k + 1]];
+          ctx.lineWidth = 1 + 0.5 * extra;
+          ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
           ctx.beginPath();
           ctx.moveTo(A.x, A.y);
           ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
@@ -170,15 +196,40 @@
           if (grow > 0.99) dot(B, 2 + 0.6 * extra, alpha * 1.2);
         }
       }
+      function trace(route, alpha) {
+        // A settled path from an earlier episode, drawn very faintly.
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
+        for (var k = 0; k < route.length - 1; k++) {
+          var A = pts[route[k]], B = pts[route[k + 1]];
+          ctx.beginPath();
+          ctx.moveTo(A.x, A.y);
+          ctx.lineTo(B.x, B.y);
+          ctx.stroke();
+          dot(B, 2, alpha * 1.2);
+        }
+      }
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
         for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, 0.08);
         ctx.lineCap = 'round';
+        // Many earlier paths, side by side: slowly they add up to a pattern.
+        for (var m = memory.length - 1; m >= 0; m--) {
+          var life = 1 - clamp((t - memory[m].born) / MEMORY);
+          if (life <= 0) { memory.splice(m, 1); continue; }
+          trace(memory[m].route, 0.06 * life);
+        }
         for (var e = eps.length - 1; e >= 0; e--) {
           var ep = eps[e], age = t - ep.t0;
           var win = ep.tries[ep.tries.length - 1];
           var shineStart = win.reached + 250;
           if (age > shineStart + SHINE + FADE) {
+            // The kept path settles into a faint trace that lingers.
+            memory.push({ route: win.route, side: ep.side, born: t });
+            var mine = 0;
+            for (var c = memory.length - 1; c >= 0; c--) {
+              if (memory[c].side === ep.side && ++mine > MEMORY_MAX) memory.splice(c, 1);
+            }
             nextAt[ep.side] = t + 900 + Math.random() * 1300;
             eps.splice(e, 1);
             continue;
@@ -187,10 +238,21 @@
           var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
           for (var r = 0; r < ep.tries.length - 1; r++) {
             var tr = ep.tries[r];
+            if (age < tr.start) continue;
+            // A dead end: pause there, unsure, then let it go. A faint trace
+            // stays for the rest of the episode, a little more of the map.
             var drop = 1 - clamp((age - tr.reached - STALL) / GIVE_UP);
-            if (age >= tr.start && drop > 0) drawTry(tr, age, 0.15 * drop, 0);
+            drawTry(tr, age, (0.035 + 0.12 * drop) * keep, 0, age < tr.reached);
+            if (age >= tr.reached && drop > 0) {
+              var p = (age - tr.reached) / STALL, end = pts[tr.route[tr.hops]];
+              ctx.lineWidth = 1;
+              ctx.strokeStyle = 'rgba(0,31,63,' + (0.25 * drop * clamp(p * 3)) + ')';
+              ctx.beginPath();
+              ctx.arc(end.x, end.y, 5 + 1.5 * Math.sin(6.2832 * p), 0, 6.2832);
+              ctx.stroke();
+            }
           }
-          if (age >= win.start) drawTry(win, age, (0.16 + 0.12 * shine) * keep, shine);
+          if (age >= win.start) drawTry(win, age, 0.06 + (0.1 + 0.12 * shine) * keep, shine, age < win.reached);
           var appear = clamp(age / 500) * keep;
           dot(pts[ep.from], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
           dot(pts[ep.to], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
@@ -309,7 +371,7 @@
         { t: 'Thinking it again.', p: 'So we step back and look again. In machine learning, a wrong guess is not a failure. It is the error a model learns from. The path we let go of did the same for us: it showed us a little more of the map.' },
         { t: 'The next hop.', p: 'Then we choose. Not because we are certain, but because we have looked enough. One dot, then the next.' },
         { t: 'Looking back.', p: 'When the line finally connects, it looks as if the path was always there. It wasn’t. It was made one doubt and one decision at a time.' },
-        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations, detours, and dead ends, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'Next time the dots in the margins light up, watch which way they choose. It is never the same path twice. ~ Ghazal' }
+        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations, detours, and dead ends, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'You may have felt this in your own life too: a moment when the detours and dead ends suddenly made sense, and the path you were on finally lit up. ~ Ghazal' }
       ];
       var btn = document.getElementById('storyBtn'), overlay = document.getElementById('storyOverlay');
       var art = document.getElementById('storyArt'), text = document.getElementById('storyText');
