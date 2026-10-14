@@ -47,8 +47,11 @@
       //   3. at each dot it weighs the next hop: the dots within reach glow
       //      softly (the little that can be seen from where it stands). Often
       //      it decides at once. Sometimes it doubts: it leans toward one dot
-      //      with a short, faint reach, pulls back, maybe leans toward another,
-      //      and then commits to the hop it finally chose;
+      //      with a short, faint reach, maybe toward another, and then commits
+      //      to the hop it finally chose. Sometimes an old doubt comes back
+      //      instead: the option it passed two hops earlier lights up again
+      //      ("what if I had gone there?"), and still the line goes forward.
+      //      Doubts are never erased; each leaves a faint short stub;
       //   4. when it reaches the other dot, the whole path lights up, then
       //      settles into a very faint trace. Traces of earlier paths linger for
       //      a while, so over time many paths add up to a pattern. Then a new
@@ -59,7 +62,7 @@
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
       var GAP = 110, REACH = 210;
-      var ENDS = 900, LOOK = 420, PROBE = 750, STEP = 520, SHINE = 1300, FADE = 1400;
+      var ENDS = 900, BACK = 1000, LOOK = 420, PROBE = 750, STEP = 520, SHINE = 1300, FADE = 1400;
       var MEMORY = 120000, MEMORY_MAX = 8;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], eps = [], memory = [];
@@ -148,12 +151,18 @@
         }
         if (!r) return false;
         // Plan each hop. Often the choice is quick; sometimes there is doubt,
-        // and one or two other dots are leaned toward and let go before the
-        // line commits to the hop it chose.
+        // and one or two other dots are leaned toward before the line commits
+        // to the hop it chose. From the third hop on, an old doubt may come
+        // back first: an option passed two hops earlier.
         var plans = [], clock = ENDS;
         for (var k = 0; k < r.path.length - 1; k++) {
-          var others = [];
+          var others = [], back = null;
           for (j = 0; j < r.opts[k].length; j++) if (r.opts[k][j] !== r.path[k + 1]) others.push(r.opts[k][j]);
+          if (k >= 2 && Math.random() < 0.3) {
+            var passed = [];
+            for (j = 0; j < r.opts[k - 2].length; j++) if (r.opts[k - 2][j] !== r.path[k - 1]) passed.push(r.opts[k - 2][j]);
+            if (passed.length) back = { from: r.path[k - 2], to: pick(passed) };
+          }
           var roll = Math.random();
           var doubts = Math.min(others.length, roll < 0.45 ? 0 : (roll < 0.85 ? 1 : 2));
           var probes = [];
@@ -161,8 +170,9 @@
             var c = pick(others);
             if (probes.indexOf(c) < 0) probes.push(c);
           }
-          var commit = clock + LOOK + probes.length * PROBE;
-          plans.push({ start: clock, probes: probes, commit: commit });
+          var lookAt = clock + (back ? BACK : 0);
+          var commit = lookAt + LOOK + probes.length * PROBE;
+          plans.push({ start: clock, back: back, lookAt: lookAt, probes: probes, commit: commit });
           clock = commit + STEP;
         }
         eps.push({ t0: t, side: side, from: from, to: to, route: r.path, opts: r.opts, plans: plans, reached: clock });
@@ -176,30 +186,36 @@
         ctx.fill();
       }
       function ease(v) { return 0.5 - 0.5 * Math.cos(3.1416 * clamp(v)); }
-      function drawRoute(ep, age, alpha, extra, live) {
+      function lean(P, C, p, keep) {
+        // A doubt: a short, faint reach from P toward C. While it is felt it
+        // is brighter and C glows; afterwards a faint stub stays, not erased.
+        if (p <= 0) return;
+        var ext = 0.4 * ease(p * 2), felt = p < 1 ? Math.sin(3.1416 * p) : 0;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,31,63,' + ((0.05 + 0.12 * felt) * keep) + ')';
+        ctx.beginPath();
+        ctx.moveTo(P.x, P.y);
+        ctx.lineTo(P.x + (C.x - P.x) * ext, P.y + (C.y - P.y) * ext);
+        ctx.stroke();
+        if (felt > 0) dot(C, 2.2, 0.1 + 0.15 * felt);
+      }
+      function drawRoute(ep, age, alpha, extra, live, keep) {
         for (var k = 0; k < ep.plans.length; k++) {
           var pl = ep.plans[k];
           if (age < pl.start) break;
           var A = pts[ep.route[k]], B = pts[ep.route[k + 1]];
-          if (live) {
+          // An old doubt comes back: the option passed two hops earlier.
+          if (pl.back) lean(pts[pl.back.from], pts[pl.back.to], (age - pl.start) / BACK, keep);
+          // Doubt about this hop: leaning toward other dots before choosing.
+          for (var j = 0; j < pl.probes.length; j++) {
+            lean(A, pts[pl.probes[j]], (age - pl.lookAt - LOOK - j * PROBE) / PROBE, keep);
+          }
+          if (live && age >= pl.lookAt) {
             // Weighing the next hop: the dots within reach glow softly.
-            var lp = (age - pl.start) / (pl.commit - pl.start + STEP * 0.6);
+            var lp = (age - pl.lookAt) / (pl.commit - pl.lookAt + STEP * 0.6);
             if (lp < 1) {
               var g = Math.sin(3.1416 * lp), o = ep.opts[k];
               for (var q = 0; q < o.length; q++) dot(pts[o[q]], 1.3 + 1.1 * g, 0.08 + 0.2 * g);
-            }
-            // Doubt: a short, faint lean toward another dot, then pulling back.
-            for (var j = 0; j < pl.probes.length; j++) {
-              var pp = (age - pl.start - LOOK - j * PROBE) / PROBE;
-              if (pp <= 0 || pp >= 1) continue;
-              var C = pts[pl.probes[j]], ext = 0.45 * Math.sin(3.1416 * pp);
-              ctx.lineWidth = 1;
-              ctx.strokeStyle = 'rgba(0,31,63,0.13)';
-              ctx.beginPath();
-              ctx.moveTo(A.x, A.y);
-              ctx.lineTo(A.x + (C.x - A.x) * ext, A.y + (C.y - A.y) * ext);
-              ctx.stroke();
-              dot(C, 2.2, 0.1 + 0.15 * Math.sin(3.1416 * pp));
             }
           }
           var grow = ease((age - pl.commit) / STEP);
@@ -253,7 +269,7 @@
           var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
           var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
           // Once B is reached, the whole path lights up together.
-          drawRoute(ep, age, 0.06 + (0.1 + 0.16 * shine) * keep, shine, age < ep.reached);
+          drawRoute(ep, age, 0.06 + (0.1 + 0.16 * shine) * keep, shine, age < ep.reached, keep);
           var appear = clamp(age / 500) * keep;
           dot(pts[ep.from], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
           dot(pts[ep.to], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
@@ -310,7 +326,7 @@
     #storyArt .pulse{transform-box:fill-box;transform-origin:center;}
     #storyArt .g-dots{opacity:1;transition:opacity .7s ease;}
     #storyArt.s1 .g-dots{opacity:0;}
-    /* The line only moves forward: A, hop 1, (doubt) hop 2, hop 3, B. Then the whole path lights up. */
+    /* The line only moves forward: A, hop 1, (doubt) hop 2, (old doubt from A) hop 3, B. Then the whole path lights up. */
     #storyArt .g-reach{opacity:0;transition:opacity .6s ease;}
     #storyArt.s2 .g-reach{opacity:1;}
     #storyArt .opt{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
@@ -318,7 +334,13 @@
     #storyArt.s4 .opt-d{opacity:.7;animation:storyPulse 1.6s ease-in-out 2;}
     #storyArt .seg,#storyArt .probe{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1;}
     #storyArt .probe{stroke-width:1.3;opacity:.45;transition:stroke-dashoffset .9s ease,opacity .6s ease;}
-    #storyArt.s3 .probe{stroke-dashoffset:.5;transition-delay:.9s;}
+    /* Doubts are never erased: after they are felt, a faint stub stays. */
+    #storyArt.s3 .probe1{stroke-dashoffset:.5;transition-delay:.9s;}
+    #storyArt.s0 .probe1,#storyArt.s4 .probe1,#storyArt.s5 .probe1,#storyArt.s6 .probe1,#storyArt.s7 .probe1{stroke-dashoffset:.5;opacity:.2;}
+    #storyArt.s5 .probe2{stroke-dashoffset:.5;}
+    #storyArt.s0 .probe2,#storyArt.s6 .probe2,#storyArt.s7 .probe2{stroke-dashoffset:.5;opacity:.2;}
+    #storyArt.s5 .opt-b{opacity:.7;animation:storyPulse 1.6s ease-in-out 2;}
+    #storyArt.s5 .seg3{transition-delay:1.8s;}
     #storyArt .seg{stroke-width:1.8;opacity:.75;transition:stroke-dashoffset .8s ease,stroke-width .8s ease,opacity .8s ease;}
     #storyArt.s0 .seg,#storyArt.s3 .seg1,#storyArt.s4 .seg1,#storyArt.s4 .seg2,#storyArt.s5 .seg1,#storyArt.s5 .seg2,#storyArt.s5 .seg3,#storyArt.s6 .seg,#storyArt.s7 .seg{stroke-dashoffset:0;}
     #storyArt.s4 .seg2{transition-delay:.9s;}
@@ -329,7 +351,7 @@
     #storyArt.s0 .hop,#storyArt.s3 .hop1,#storyArt.s4 .hop1,#storyArt.s4 .hop2,#storyArt.s5 .hop,#storyArt.s6 .hop,#storyArt.s7 .hop{opacity:1;}
     #storyArt.s3 .hop1{transition-delay:.7s;}
     #storyArt.s4 .hop2{transition-delay:1.6s;}
-    #storyArt.s5 .hop3{transition-delay:.7s;}
+    #storyArt.s5 .hop3{transition-delay:2.5s;}
     #storyArt .b-ring{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
     #storyArt.s6 .b-ring{opacity:.6;transition-delay:.8s;animation:storyPulse 1.6s ease-in-out infinite;}
     #storyArt .g-many{fill:none;stroke:#001f3f;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s ease;}
@@ -363,7 +385,7 @@
         <circle class="opt opt-a pulse" cx="80" cy="30" r="6"/><circle class="opt opt-b pulse" cx="100" cy="74" r="6"/>
         <circle class="opt opt-c pulse" cx="150" cy="58" r="6"/><circle class="opt opt-d pulse" cx="165" cy="22" r="6"/>
         <g class="g-many"><polyline points="22,60 100,74 212,72 278,44"/><polyline points="22,60 125,40 232,38 278,44"/><polyline points="22,60 80,30 150,58 232,38 278,44"/><polyline points="22,60 100,74 125,40 165,22 278,44"/><polyline points="22,60 150,58 212,72 278,44"/></g>
-        <line class="probe" pathLength="1" x1="80" y1="30" x2="150" y2="58"/>
+        <line class="probe probe1" pathLength="1" x1="80" y1="30" x2="150" y2="58"/><line class="probe probe2" pathLength="1" x1="22" y1="60" x2="100" y2="74"/>
         <line class="seg seg1" pathLength="1" x1="22" y1="60" x2="80" y2="30"/><line class="seg seg2" pathLength="1" x1="80" y1="30" x2="165" y2="22"/><line class="seg seg3" pathLength="1" x1="165" y1="22" x2="232" y2="38"/><line class="seg seg4" pathLength="1" x1="232" y1="38" x2="278" y2="44"/>
         <circle class="hop hop1" cx="80" cy="30" r="3.4" fill="#001f3f"/><circle class="hop hop2" cx="165" cy="22" r="3.4" fill="#001f3f"/><circle class="hop hop3" cx="232" cy="38" r="3.4" fill="#001f3f"/>
         <circle class="b-ring pulse" cx="278" cy="44" r="9"/>
@@ -390,7 +412,7 @@
         { t: 'Dots in between.', p: 'Between here and there are milestones, people, and small choices. Nobody picks the whole route at once. We only ever pick the next hop, using the little we can see from where we stand.' },
         { t: 'A hop we doubt.', p: 'We take the first hop. At the next dot, the way forward is less clear. We lean toward one option, and halfway there we hesitate: is this really the one?' },
         { t: 'Thinking it again.', p: 'So we think it again, and choose a different hop. In machine learning, a wrong guess is not a failure. It is the error a model learns from. The hop we almost took did the same for us: it showed us a little more of the map.' },
-        { t: 'The next hop.', p: 'We don’t go back to redo the hops behind us. We keep moving forward, not because we are certain, but because we have looked enough. One dot, then the next.' },
+        { t: 'The next hop.', p: 'Sometimes an old doubt comes back, from a choice a few hops ago: what if I had gone the other way? We feel it, and still we don’t go back. We make the next choice and keep moving forward, not because we are certain, but because we have looked enough. One dot, then the next.' },
         { t: 'Looking back.', p: 'When the line finally reaches B, the whole path lights up, and it looks as if it was always there. It wasn’t. It was made one doubt and one decision at a time.' },
         { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations and second thoughts, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'You may have felt this in your own life too: a moment when the doubts along the way suddenly made sense, and the path you were on finally lit up. ~ Ghazal' }
       ];
