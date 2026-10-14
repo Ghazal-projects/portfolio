@@ -92,6 +92,8 @@
         var r = column.getBoundingClientRect();
         fill(0, r.left - 30, -1);
         fill(r.right + 30, w, 1);
+        // The story card reads this to know whether the reader can see the dots.
+        window.marginDots = pts.length > 0;
       }
       function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
       function gapBetween(i, j) {
@@ -364,7 +366,8 @@
       // The first step is the intro in my own voice; the drawing shows the finished path,
       // then clears and replays from step two on.
       var steps = [
-        { t: 'Why the dots?', p: 'Hi, I’m Ghazal. You may have noticed the faint dots in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.' },
+        { t: 'Why the dots?', p: 'Hi, I’m Ghazal. You may have noticed the faint dots in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.',
+          pSmall: 'Hi, I’m Ghazal. On a larger screen, faint dots move in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.' },
         { t: 'Point A, point B.', p: 'We usually know where we stand, and roughly where we want to be. The line between the two is almost never straight.' },
         { t: 'Dots in between.', p: 'Between here and there are milestones, people, and small choices. Nobody picks the whole route at once. We only ever pick the next hop, using the little we can see from where we stand.' },
         { t: 'A hop that doesn’t hold.', p: 'Sometimes we head toward a dot, and halfway there it stops making sense. A dead end. We pause, unsure where to go next.' },
@@ -391,7 +394,8 @@
         text.style.opacity = fade ? '0' : '1';
         swap = setTimeout(function () {
           title.textContent = steps[i].t;
-          para.textContent = steps[i].p;
+          // On a phone or narrow window there are no margin dots, so use the wording made for that.
+          para.textContent = (steps[i].pSmall && !window.marginDots) ? steps[i].pSmall : steps[i].p;
           note.textContent = steps[i].note || '';
           note.style.display = steps[i].note ? 'block' : 'none';
           text.style.opacity = '1';
