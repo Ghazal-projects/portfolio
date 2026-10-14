@@ -54,8 +54,10 @@
       //      Doubts are never erased; each leaves a faint short stub;
       //   4. when it reaches the other dot, the whole path lights up, then
       //      settles into a very faint trace. Traces of earlier paths linger for
-      //      a while, so over time many paths add up to a pattern. Then a new
-      //      pair is chosen.
+      //      a while, so over time many paths add up to a pattern;
+      //   5. as soon as a path has lit up, a new pair of dots lights up
+      //      somewhere else in that margin, away from the path just finished,
+      //      and the story starts again.
       // It starts once the status popup has been closed. The margins follow the
       // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
@@ -66,7 +68,7 @@
       var MEMORY = 120000, MEMORY_MAX = 8;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], eps = [], memory = [];
-      var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 };
+      var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 }, lastRoute = { '-1': [], '1': [] };
       function fill(from, to, sideId) {
         // Spread dots evenly over one margin, however wide or narrow it is.
         var width = to - from;
@@ -91,6 +93,7 @@
         pts = [];
         eps = [];
         memory = [];
+        lastRoute = { '-1': [], '1': [] };
         var column = document.querySelector('.wrapper');
         if (!column) return;
         var r = column.getBoundingClientRect();
@@ -103,11 +106,13 @@
       function gapBetween(i, j) {
         return Math.sqrt(Math.pow(pts[i].x - pts[j].x, 2) + Math.pow(pts[i].y - pts[j].y, 2));
       }
-      function makeRoute(from, to, side) {
+      function makeRoute(from, to, side, block) {
         // Wander from one end dot to the other in any direction, each hop
-        // landing a little closer to the target. For each hop, the dots that
-        // were within reach (the options) are kept so they can be weighed.
+        // landing a little closer to the target, away from the dots in block.
+        // For each hop, the dots that were within reach (the options) are kept
+        // so they can be weighed.
         var cur = from, route = [from], opts = [], used = {};
+        for (var b in block) used[b] = true;
         used[from] = true;
         for (var guard = 0; guard < 40; guard++) {
           var left = gapBetween(cur, to), near = [];
@@ -130,12 +135,20 @@
         return null;
       }
       function startEpisode(t, side) {
-        var j, mine = [], far = [];
-        for (j = 0; j < pts.length; j++) if (pts[j].side === side) mine.push(j);
+        var j, mine = [], far = [], fresh = [], block = {}, recent = lastRoute[side];
+        for (j = 0; j < recent.length; j++) block[recent[j]] = true;
+        for (j = 0; j < pts.length; j++) if (pts[j].side === side && !block[j]) mine.push(j);
         if (mine.length < 3) return false;
-        // A random first dot anywhere in this margin, and a second one a short,
-        // medium or long way off in any direction.
-        var from = pick(mine), roll = Math.random();
+        // The new pair goes somewhere else: prefer a first dot well away from
+        // the path that just lit up.
+        for (j = 0; j < mine.length; j++) {
+          var clear = true;
+          for (var q = 0; q < recent.length && clear; q++) if (gapBetween(mine[j], recent[q]) < GAP * 1.5) clear = false;
+          if (clear) fresh.push(mine[j]);
+        }
+        // A first dot, and a second one a short, medium or long way off in any
+        // direction.
+        var from = pick(fresh.length ? fresh : mine), roll = Math.random();
         var lo = roll < 0.35 ? 1.4 : (roll < 0.75 ? 2.6 : 4.5);
         var hi = roll < 0.35 ? 2.6 : (roll < 0.75 ? 4.5 : 99);
         for (j = 0; j < mine.length; j++) {
@@ -146,7 +159,8 @@
         var to = pick(far);
         var r = null;
         for (var n = 0; n < 20 && !r; n++) {
-          r = makeRoute(from, to, side);
+          // Keep clear of the last path if possible; otherwise allow crossing it.
+          r = makeRoute(from, to, side, n < 12 ? block : {});
           if (r && r.path.length < 3) r = null;
         }
         if (!r) return false;
@@ -262,9 +276,14 @@
             for (var c = memory.length - 1; c >= 0; c--) {
               if (memory[c].side === ep.side && ++mine > MEMORY_MAX) memory.splice(c, 1);
             }
-            nextAt[ep.side] = t + 900 + Math.random() * 1300;
             eps.splice(e, 1);
             continue;
+          }
+          if (!ep.lit && age > shineStart + SHINE * 0.6) {
+            // The path has lit up: move on to other dots while it settles.
+            ep.lit = true;
+            lastRoute[ep.side] = ep.route;
+            nextAt[ep.side] = t + 300;
           }
           var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
           var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
@@ -276,7 +295,9 @@
         }
       }
       function busy(side) {
-        for (var e = 0; e < eps.length; e++) if (eps[e].side === side) return true;
+        // A margin is busy only while a path is still being found; once it has
+        // lit up, the next pair can start.
+        for (var e = 0; e < eps.length; e++) if (eps[e].side === side && !eps[e].lit) return true;
         return false;
       }
       function resize() {
