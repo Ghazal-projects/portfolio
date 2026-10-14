@@ -42,14 +42,15 @@
       // page margins only, never behind the content. Three designed patterns,
       // each running the full height of the screen, repeat one after another:
       //   1. the dots of the pattern appear, with A at the top and B at the
-      //      bottom;
-      //   2. a line moves from A toward B, one hop at a time, and only ever
-      //      forward (down). It never goes back and never stops halfway;
-      //   3. at a few hops there is more than one way on. The line reaches
-      //      toward two or three dots at the same time, hesitates (the tips
-      //      pulse), then picks one and carries on. The other branches shrink
-      //      to faint stubs;
-      //   4. when it reaches B, a glowing pulse runs along the path from A to B
+      //      bottom. Each pattern is five hops from A to B;
+      //   2. at every hop there are two or three ways on. Branches grow toward
+      //      all of them at the same time (parallel choices);
+      //   3. then one is tried: that branch reaches further and its tip pulses.
+      //      Sometimes the first try is not the one, and it pulls back;
+      //   4. then one is picked. The line completes that hop and the other
+      //      branches shrink to faint stubs. The line only ever moves forward
+      //      (down), never back, and never stops halfway;
+      //   5. when it reaches B, a glowing pulse runs along the path from A to B
       //      and the whole path lights up, then fades. The next pattern begins.
       // The right margin plays the patterns mirrored and offset in time. It
       // starts once the status popup has been closed. On a narrow screen with
@@ -57,31 +58,31 @@
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var APPEAR = 700, HOP = 700, BRANCH = 800, DOUBT = 1100, DECIDE = 550;
+      var APPEAR = 700, BRANCH = 650, TRY = 1000, PICK = 550, HOP = BRANCH + TRY + PICK;
       var TRAVEL = 1500, GLOW = 1500, FADE = 1200, REST = 900, PAD = 26;
       var INK = '0,31,63', LIGHT = '40,140,255';
       // Each pattern: the path taken from A (first) to B (last), in margin
       // coordinates (x across the margin, y down the screen, both 0 to 1), and
-      // the other dots reached toward at the hops where there was a choice,
-      // keyed by hop number.
+      // for each of the five hops the other ways on (alts) and which one is
+      // tried first (tryAlt: an index into alts, or -1 to try the way that is
+      // then picked).
       var PATTERNS = [
-        { path: [[0.5, 0.05], [0.3, 0.19], [0.55, 0.35], [0.45, 0.51], [0.25, 0.66], [0.42, 0.8], [0.62, 0.95]],
-          forks: { 1: [[0.15, 0.36]], 3: [[0.5, 0.68], [0.75, 0.64]] } },
-        { path: [[0.25, 0.05], [0.6, 0.17], [0.7, 0.31], [0.85, 0.46], [0.6, 0.6], [0.35, 0.75], [0.5, 0.95]],
-          forks: { 2: [[0.4, 0.45]], 4: [[0.72, 0.77]] } },
-        { path: [[0.7, 0.05], [0.35, 0.2], [0.5, 0.34], [0.3, 0.48], [0.45, 0.63], [0.65, 0.78], [0.4, 0.95]],
-          forks: { 0: [[0.82, 0.22]], 3: [[0.15, 0.62], [0.75, 0.6]] } }
+        { path: [[0.5, 0.05], [0.25, 0.23], [0.6, 0.42], [0.35, 0.6], [0.7, 0.78], [0.45, 0.95]],
+          hops: [{ alts: [[0.78, 0.24]], tryAlt: 0 }, { alts: [[0.12, 0.43], [0.38, 0.45]], tryAlt: -1 },
+                 { alts: [[0.82, 0.6]], tryAlt: 0 }, { alts: [[0.15, 0.79], [0.45, 0.8]], tryAlt: 1 },
+                 { alts: [[0.85, 0.95]], tryAlt: -1 }] },
+        { path: [[0.3, 0.05], [0.65, 0.22], [0.4, 0.4], [0.75, 0.58], [0.45, 0.76], [0.6, 0.95]],
+          hops: [{ alts: [[0.12, 0.23]], tryAlt: -1 }, { alts: [[0.85, 0.41], [0.15, 0.41]], tryAlt: 0 },
+                 { alts: [[0.35, 0.6]], tryAlt: 0 }, { alts: [[0.88, 0.77]], tryAlt: -1 },
+                 { alts: [[0.22, 0.94], [0.88, 0.93]], tryAlt: 1 }] },
+        { path: [[0.65, 0.05], [0.4, 0.21], [0.72, 0.39], [0.3, 0.57], [0.58, 0.76], [0.35, 0.95]],
+          hops: [{ alts: [[0.88, 0.22], [0.15, 0.2]], tryAlt: 1 }, { alts: [[0.2, 0.4]], tryAlt: -1 },
+                 { alts: [[0.6, 0.6], [0.88, 0.57]], tryAlt: 0 }, { alts: [[0.15, 0.77]], tryAlt: 0 },
+                 { alts: [[0.75, 0.95]], tryAlt: -1 }] }
       ];
       PATTERNS.forEach(function (p) {
-        var c = APPEAR;
-        p.hops = [];
-        for (var k = 0; k < p.path.length - 1; k++) {
-          var alts = p.forks[k] || null;
-          p.hops.push({ start: c, alts: alts, decide: c + BRANCH + DOUBT });
-          c += alts ? BRANCH + DOUBT + DECIDE : HOP;
-        }
-        p.reached = c;
-        p.total = c + TRAVEL + GLOW + FADE;
+        p.reached = APPEAR + p.hops.length * HOP;
+        p.total = p.reached + TRAVEL + GLOW + FADE;
       });
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, margins = {}, lastFrame = 0, sides = null;
@@ -130,34 +131,35 @@
         var L = a - p.reached;
         var fade = 1 - clamp((L - TRAVEL - GLOW) / FADE), show = clamp(a / APPEAR) * fade;
         // The map: every dot of this pattern, faint.
-        for (k = 0; k < pts.length; k++) dot(pts[k], 1.6, INK, 0.14 * show);
-        for (k in p.forks) for (j = 0; j < p.forks[k].length; j++) dot(at(m, side, p.forks[k][j]), 1.6, INK, 0.14 * show);
+        for (k = 0; k < pts.length; k++) dot(pts[k], 1.8, INK, 0.2 * show);
+        for (k = 0; k < p.hops.length; k++) for (j = 0; j < p.hops[k].alts.length; j++) dot(at(m, side, p.hops[k].alts[j]), 1.8, INK, 0.2 * show);
         // The hops, forward only.
         for (k = 0; k < p.hops.length; k++) {
-          var hp = p.hops[k], A = pts[k], B = pts[k + 1];
-          if (a < hp.start) break;
-          var g;
-          if (!hp.alts) {
-            g = ease((a - hp.start) / HOP);
-          } else {
-            // Several ways on at once: all branches grow together, the tips
-            // pulse while it hesitates, then one is chosen and the rest shrink
-            // back to faint stubs.
-            var reach = 0.55 * ease((a - hp.start) / BRANCH), decided = a >= hp.decide;
-            var q = (a - hp.start - BRANCH) / DOUBT, doubting = q > 0 && !decided;
-            var pulse = doubting ? 0.5 + 0.5 * Math.sin(q * 6.2832 * 1.5) : 0;
-            var drop = ease((a - hp.decide) / DECIDE);
-            var ends = hp.alts.map(function (pt) { return at(m, side, pt); });
-            for (j = 0; j < ends.length; j++) {
-              var stub = decided ? 0.55 - 0.25 * drop : reach;
-              line(A, ends[j], stub, INK, (0.3 - 0.22 * drop) * fade, 1.3);
-              if (doubting) ring(ends[j], 4 + 2 * pulse, INK, 0.3 * show);
-            }
-            if (doubting) ring(B, 4 + 2 * pulse, INK, 0.3 * show);
-            g = decided ? 0.55 + 0.45 * ease((a - hp.decide) / DECIDE) : reach;
+          var hp = p.hops[k], A = pts[k], B = pts[k + 1], e = a - APPEAR - k * HOP;
+          if (e < 0) break;
+          var ends = hp.alts.map(function (pt) { return at(m, side, pt); });
+          // 1. Parallel choices: branches grow toward every way on at once.
+          var reach = 0.45 * ease(e / BRANCH);
+          // 2. A try: one branch reaches further and its tip pulses. If it is
+          //    not the one, it pulls back at the end of the try.
+          var tp = (e - BRANCH) / TRY, trying = tp > 0 && tp < 1;
+          var out = tp <= 0 ? 0 : (hp.tryAlt >= 0 ? ease(tp / 0.35) - ease((tp - 0.7) / 0.3) : ease(tp / 0.35));
+          var tried = 0.45 + 0.3 * out;
+          // 3. The pick: the chosen way completes, the others shrink to stubs.
+          var pk = ease((e - BRANCH - TRY) / PICK), picked = e >= BRANCH + TRY;
+          for (j = 0; j < ends.length; j++) {
+            var len = j === hp.tryAlt ? tried : reach;
+            if (picked) len = 0.45 - 0.2 * pk;
+            line(A, ends[j], len, INK, (0.42 - 0.3 * pk) * fade, 1.5);
           }
-          line(A, B, g, INK, 0.34 * fade, 1.4);
-          if (g > 0.99) dot(B, 2.4, INK, 0.5 * fade);
+          var g = hp.tryAlt < 0 ? (picked ? 0.75 + 0.25 * pk : tried) : (picked ? 0.45 + 0.55 * pk : reach);
+          line(A, B, g, INK, 0.45 * fade, 1.6);
+          if (trying) {
+            var T = hp.tryAlt >= 0 ? ends[hp.tryAlt] : B, tl = hp.tryAlt >= 0 ? tried : g;
+            var tip = { x: A.x + (T.x - A.x) * tl, y: A.y + (T.y - A.y) * tl };
+            ring(tip, 3.5 + 2 * (0.5 + 0.5 * Math.sin(tp * 6.2832 * 2)), INK, 0.45 * show);
+          }
+          if (g > 0.99) dot(B, 2.6, INK, 0.6 * fade);
         }
         // Reaching B: a glowing pulse runs from A to B, then the whole path
         // lights up and fades.
