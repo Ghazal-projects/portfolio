@@ -229,6 +229,140 @@
       if (!still) window.requestAnimationFrame(tick);
     })();
   </script>
+  <style>
+    /* Data story: a small corner button that opens "Between A and B", told one hop at a time. */
+    #storyBtn{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;padding:0;background:rgba(255,255,255,0.92);border:1px solid rgba(0,31,63,0.28);box-shadow:0 3px 12px rgba(0,31,63,0.14);cursor:pointer;z-index:9000;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease;}
+    #storyBtn:hover,#storyBtn:focus-visible{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,31,63,0.22);outline:none;}
+    #storyBtn .tip{position:absolute;right:56px;white-space:nowrap;background:#001f3f;color:#fff;font-size:13px;padding:5px 10px;border-radius:5px;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+    #storyBtn:hover .tip,#storyBtn:focus-visible .tip{opacity:1;}
+    #storyOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,31,63,0);transition:background .4s ease;z-index:9999;display:none;}
+    #storyOverlay.open{background:rgba(0,31,63,0.12);}
+    #storyCard{position:fixed;top:50%;left:50%;width:460px;max-width:calc(100vw - 32px);box-sizing:border-box;transform:translate(-50%,-46%);opacity:0;transition:opacity .4s ease,transform .4s ease;background:rgba(255,255,255,0.95);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,31,63,0.2);border-top:4px solid #001f3f;border-radius:8px;box-shadow:0 8px 30px rgba(0,31,63,0.2);padding:26px 28px 20px;color:#222;text-align:left;}
+    #storyOverlay.open #storyCard{opacity:1;transform:translate(-50%,-50%);}
+    #storyCard .x{position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;background:none;border:0;padding:4px;}
+    #storyCard .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6b7a8c;margin-bottom:10px;}
+    #storyArt{display:block;width:100%;height:auto;margin:0 0 14px;}
+    #storyArt .g-dots{opacity:0;transition:opacity .7s ease;}
+    #storyArt .g-try,#storyArt .g-path{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:1;transition:stroke-dashoffset 1.4s ease,opacity .8s ease,stroke-width .8s ease;}
+    #storyArt .g-try{stroke-width:1.5;opacity:.55;}
+    #storyArt .g-path{stroke-width:1.8;}
+    #storyArt .g-end{opacity:0;transition:opacity .6s ease .9s;}
+    #storyArt.a1 .g-dots{opacity:1;}
+    #storyArt.a2 .g-try{stroke-dashoffset:0;}
+    #storyArt.a2 .g-end{opacity:1;}
+    #storyArt.a3 .g-try,#storyArt.a3 .g-end{opacity:.14;transition-delay:0s;}
+    #storyArt.a4 .g-path{stroke-dashoffset:0;}
+    #storyArt.a5 .g-path{stroke-width:2.8;}
+    #storyArt .g-many{fill:none;stroke:#001f3f;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s ease;}
+    #storyArt.a6 .g-many{opacity:.22;}
+    #storyArt.a6 .g-path{stroke-width:2;}
+    #storyText{transition:opacity .2s ease;min-height:132px;}
+    #storyText .t{font-size:19px;font-weight:600;color:#001f3f;margin:0 0 6px;}
+    #storyText .p{font-size:15.5px;line-height:1.6;margin:0;}
+    #storyText .note{font-size:13.5px;line-height:1.5;color:#6b7a8c;font-style:italic;margin:10px 0 0;}
+    #storyNav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;}
+    #storyHops{display:flex;align-items:center;}
+    #storyHops span{width:7px;height:7px;border-radius:50%;background:rgba(0,31,63,0.18);transition:background .3s ease;}
+    #storyHops span.on{background:#001f3f;}
+    #storyHops i{width:12px;height:1px;background:rgba(0,31,63,0.18);transition:background .3s ease;}
+    #storyHops i.on{background:#001f3f;}
+    #storyNav button{font:inherit;font-size:14px;font-weight:600;border-radius:5px;cursor:pointer;padding:6px 14px;}
+    #storyBack{background:none;border:0;color:#001f3f;}
+    #storyNext{background:#001f3f;color:#fff;border:1px solid #001f3f;margin-left:6px;}
+    @media (prefers-reduced-motion: reduce){#storyBtn,#storyCard,#storyArt *,#storyText,#storyOverlay{transition:none !important;}}
+  </style>
+  <button id="storyBtn" type="button" aria-label="Read a short story: Between A and B">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="18" x2="13" y2="21" stroke="#001f3f" stroke-width="1.3" stroke-dasharray="2 2" opacity=".45"/><polyline points="4,18 11,7 20,12" fill="none" stroke="#001f3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="18" r="2.4" fill="#001f3f"/><circle cx="11" cy="7" r="1.7" fill="#001f3f"/><circle cx="20" cy="12" r="2.4" fill="#001f3f"/></svg>
+    <span class="tip">Between A and B: a short story</span>
+  </button>
+  <div id="storyOverlay">
+    <div id="storyCard" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
+      <button class="x" type="button" id="storyClose" aria-label="Close">✕</button>
+      <div class="kicker">A data story · Between A and B</div>
+      <svg id="storyArt" viewBox="0 0 300 96" aria-hidden="true">
+        <g class="g-dots" fill="rgba(0,31,63,0.35)"><circle cx="80" cy="30" r="2.6"/><circle cx="100" cy="74" r="2.6"/><circle cx="150" cy="58" r="2.6"/><circle cx="165" cy="22" r="2.6"/><circle cx="212" cy="72" r="2.6"/><circle cx="232" cy="38" r="2.6"/><circle cx="125" cy="40" r="2.6"/></g>
+        <g class="g-many"><polyline points="22,60 100,74 212,72 278,44"/><polyline points="22,60 125,40 232,38 278,44"/><polyline points="22,60 80,30 150,58 232,38 278,44"/><polyline points="22,60 100,74 125,40 165,22 278,44"/><polyline points="22,60 150,58 212,72 278,44"/></g>
+        <polyline class="g-try" pathLength="1" points="22,60 100,74 150,58"/>
+        <circle class="g-end" cx="150" cy="58" r="4.5" fill="none" stroke="#001f3f" stroke-width="1.2"/>
+        <polyline class="g-path" pathLength="1" points="22,60 80,30 165,22 232,38 278,44"/>
+        <circle cx="22" cy="60" r="5" fill="#001f3f"/><circle cx="278" cy="44" r="5" fill="#001f3f"/>
+        <text x="22" y="84" font-size="11" fill="#001f3f" text-anchor="middle" font-weight="600">A</text>
+        <text x="278" y="30" font-size="11" fill="#001f3f" text-anchor="middle" font-weight="600">B</text>
+      </svg>
+      <div id="storyText" aria-live="polite"><div class="t" id="storyTitle"></div><p class="p"></p><p class="note"></p></div>
+      <div id="storyNav">
+        <div id="storyHops" aria-hidden="true"></div>
+        <div><button id="storyBack" type="button">← Back</button><button id="storyNext" type="button">Next →</button></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      // "Between A and B": the same idea the margin dots act out, told in six hops.
+      var steps = [
+        { t: 'Point A, point B.', p: 'We usually know where we stand, and roughly where we want to be. The line between the two is almost never straight.' },
+        { t: 'Dots in between.', p: 'Between here and there are milestones, people, and small choices. Nobody picks the whole route at once. We only ever pick the next hop, using the little we can see from where we stand.' },
+        { t: 'A hop that doesn’t hold.', p: 'Sometimes we head toward a dot, and halfway there it stops making sense. A dead end. We pause, unsure where to go next.' },
+        { t: 'Thinking it again.', p: 'So we step back and look again. In machine learning, a wrong guess is not a failure. It is the error a model learns from. The path we let go of did the same for us: it showed us a little more of the map.' },
+        { t: 'The next hop.', p: 'Then we choose. Not because we are certain, but because we have looked enough. One dot, then the next.' },
+        { t: 'Looking back.', p: 'When the line finally connects, it looks as if the path was always there. It wasn’t. It was made one doubt and one decision at a time.' },
+        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations, detours, and dead ends, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'The faint dots moving in the margins of this page tell this story again and again, each time by a different path.' }
+      ];
+      var btn = document.getElementById('storyBtn'), overlay = document.getElementById('storyOverlay');
+      var art = document.getElementById('storyArt'), text = document.getElementById('storyText');
+      var title = text.querySelector('.t'), para = text.querySelector('.p'), note = text.querySelector('.note');
+      var hops = document.getElementById('storyHops'), back = document.getElementById('storyBack'), next = document.getElementById('storyNext');
+      var i = 0, isOpen = false, swap = null;
+      for (var k = 0; k < steps.length; k++) hops.innerHTML += (k ? '<i></i>' : '') + '<span></span>';
+      function render(fade) {
+        var cls = [];
+        for (var k = 1; k <= i; k++) cls.push('a' + k);
+        art.setAttribute('class', cls.join(' '));
+        var marks = hops.children;
+        for (var m = 0; m < marks.length; m++) marks[m].className = (m <= i * 2) ? 'on' : '';
+        back.style.visibility = i ? 'visible' : 'hidden';
+        next.textContent = i === steps.length - 1 ? 'Close' : 'Next →';
+        clearTimeout(swap);
+        text.style.opacity = fade ? '0' : '1';
+        swap = setTimeout(function () {
+          title.textContent = steps[i].t;
+          para.textContent = steps[i].p;
+          note.textContent = steps[i].note || '';
+          note.style.display = steps[i].note ? 'block' : 'none';
+          text.style.opacity = '1';
+        }, fade ? 200 : 0);
+      }
+      function openStory() {
+        i = 0; isOpen = true;
+        overlay.style.display = 'block';
+        render(false);
+        setTimeout(function () { overlay.classList.add('open'); next.focus(); }, 30);
+      }
+      function closeStory() {
+        isOpen = false;
+        overlay.classList.remove('open');
+        setTimeout(function () { if (!isOpen) overlay.style.display = 'none'; }, 400);
+        btn.focus();
+      }
+      function go(d) {
+        if (i + d >= steps.length) return closeStory();
+        if (i + d < 0) return;
+        i += d;
+        render(true);
+      }
+      btn.addEventListener('click', openStory);
+      document.getElementById('storyClose').addEventListener('click', closeStory);
+      next.addEventListener('click', function () { go(1); });
+      back.addEventListener('click', function () { go(-1); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closeStory(); });
+      document.addEventListener('keydown', function (e) {
+        if (!isOpen) return;
+        if (e.key === 'Escape') closeStory();
+        if (e.key === 'ArrowRight') go(1);
+        if (e.key === 'ArrowLeft') go(-1);
+      });
+    })();
+  </script>
 </body>
 # PhD Candidate in Computer Science
 [University of Utah](https://www.utah.edu/) | [Flux Research Group](https://www.flux.utah.edu/)
@@ -393,7 +527,7 @@ Yoga and meditation are how I reset. I practice regularly at CorePower Yoga, whe
 - **[Effortless — Greg McKeown](https://www.amazon.com/Effortless-Make-Easier-What-Matters/dp/B08FMTSZLN/)**  
   _A guide to making the most important work feel lighter, not harder._
 
-- **[Being the Best (Persian book) – Masoud Malekyari](https://ketabrah.com/book/60237)**  
+- **[Being the Best (Behtarin Boodan) – Masoud Malekyari](https://ketabrah.com/book/60237)**  
   _A little flute loses its notes and creates a new song. Great work is not made from perfect conditions, but from turning limits into new strengths._
 
 -------------------------------------------------
