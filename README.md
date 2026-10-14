@@ -53,8 +53,7 @@
       //      ("what if I had gone there?"), and still the line goes forward.
       //      Doubts are never erased; each leaves a faint short stub;
       //   4. when it reaches the other dot, the whole path lights up, then
-      //      settles into a very faint trace. Traces of earlier paths linger for
-      //      a while, so over time many paths add up to a pattern;
+      //      settles into a very faint trace that fades out after a few seconds;
       //   5. as soon as a path has lit up, a new pair of dots lights up
       //      somewhere else in that margin, away from the path just finished,
       //      and the story starts again.
@@ -65,7 +64,9 @@
       var ctx = canvas.getContext('2d');
       var GAP = 110, REACH = 210;
       var ENDS = 900, BACK = 1000, LOOK = 420, PROBE = 750, STEP = 520, SHINE = 1300, FADE = 1400;
-      var MEMORY = 120000, MEMORY_MAX = 8;
+      // Old paths leave only a brief, faint trace, so the margins never get
+      // cluttered and the path being drawn now stays easy to follow.
+      var MEMORY = 12000, MEMORY_MAX = 2;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], eps = [], memory = [];
       var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 }, lastRoute = { '-1': [], '1': [] };
