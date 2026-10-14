@@ -42,24 +42,25 @@
       // never behind the content. It acts out the "Between A and B" story.
       // Each margin runs its own slow cycle:
       //   1. two dots light up (point A and point B), near or far apart;
-      //   2. a connection is tried from one toward the other, one hop at a time.
-      //      Before each hop, the dots within reach glow softly: the little that
-      //      can be seen from where the line stands. Then it picks one;
-      //   3. often a try reaches a dead end. It pauses there (a small ring
-      //      pulses, unsure), then fades, leaving a faint trace of what it
-      //      learned, and the next try avoids that dead end. This can happen up
-      //      to three times; sometimes the first try already works;
-      //   4. the try that reaches the other dot glows gently and settles into a
-      //      very faint trace. Traces of earlier paths linger for a while, so
-      //      over time many paths add up to a pattern. Then a new pair is chosen.
+      //   2. a line sets out from one toward the other and only ever moves
+      //      forward, one hop at a time. It never goes back to redo a hop;
+      //   3. at each dot it weighs the next hop: the dots within reach glow
+      //      softly (the little that can be seen from where it stands). Often
+      //      it decides at once. Sometimes it doubts: it leans toward one dot
+      //      with a short, faint reach, pulls back, maybe leans toward another,
+      //      and then commits to the hop it finally chose;
+      //   4. when it reaches the other dot, the whole path lights up, then
+      //      settles into a very faint trace. Traces of earlier paths linger for
+      //      a while, so over time many paths add up to a pattern. Then a new
+      //      pair is chosen.
       // It starts once the status popup has been closed. The margins follow the
       // window size; on a narrow screen with no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 110, REACH = 210, MAX_FAILS = 3, QUICK = 0.3;
-      var ENDS = 900, LOOK = 380, STEP = 480, STALL = 900, GIVE_UP = 650, SHINE = 1300, FADE = 1400;
-      var HOP = LOOK + STEP, MEMORY = 120000, MEMORY_MAX = 8;
+      var GAP = 110, REACH = 210;
+      var ENDS = 900, LOOK = 420, PROBE = 750, STEP = 520, SHINE = 1300, FADE = 1400;
+      var MEMORY = 120000, MEMORY_MAX = 8;
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = 0, h = 0, pts = [], eps = [], memory = [];
       var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 };
@@ -99,17 +100,16 @@
       function gapBetween(i, j) {
         return Math.sqrt(Math.pow(pts[i].x - pts[j].x, 2) + Math.pow(pts[i].y - pts[j].y, 2));
       }
-      function makeRoute(from, to, side, avoid) {
+      function makeRoute(from, to, side) {
         // Wander from one end dot to the other in any direction, each hop
-        // landing a little closer to the target. Dead ends found by earlier
-        // tries are avoided. For each hop, the dots that were within reach
-        // (the options) are kept so they can glow before the choice is made.
+        // landing a little closer to the target. For each hop, the dots that
+        // were within reach (the options) are kept so they can be weighed.
         var cur = from, route = [from], opts = [], used = {};
         used[from] = true;
         for (var guard = 0; guard < 40; guard++) {
           var left = gapBetween(cur, to), near = [];
           for (var j = 0; j < pts.length; j++) {
-            if (j === to || used[j] || avoid[j] || pts[j].side !== side) continue;
+            if (j === to || used[j] || pts[j].side !== side) continue;
             if (gapBetween(cur, j) <= REACH && gapBetween(j, to) < left - GAP * 0.15) near.push(j);
           }
           var canFinish = left <= REACH * 1.15;
@@ -141,29 +141,31 @@
         }
         if (!far.length) return false;
         var to = pick(far);
-        // Sometimes the decision is quick (no failed tries); otherwise one to
-        // three different ways are tried and dropped first.
-        var fails = Math.random() < QUICK ? 0 : 1 + Math.floor(Math.random() * MAX_FAILS);
-        var tries = [], seen = {}, avoid = {}, clock = ENDS;
-        for (var n = 0; n < 30 && tries.length < fails + 1; n++) {
-          var r = makeRoute(from, to, side, avoid);
-          if (!r || r.path.length < 3 || seen[r.path.join(',')]) continue;
-          seen[r.path.join(',')] = true;
-          var full = r.path.length - 1;
-          var failed = tries.length < fails;
-          // A failed try stops at a dead end part of the way along, and the
-          // next tries learn to stay away from that dot.
-          var hops = failed ? 1 + Math.floor(Math.random() * (full - 1)) : full;
-          if (failed) avoid[r.path[hops]] = true;
-          var reached = clock + hops * HOP;
-          tries.push({ route: r.path, opts: r.opts, hops: hops, full: full, start: clock, reached: reached });
-          clock = reached + STALL + GIVE_UP + 200;
+        var r = null;
+        for (var n = 0; n < 20 && !r; n++) {
+          r = makeRoute(from, to, side);
+          if (r && r.path.length < 3) r = null;
         }
-        if (!tries.length) return false;
-        // If no try got all the way, let the last one finish.
-        var win = tries[tries.length - 1];
-        if (win.hops < win.full) { win.hops = win.full; win.reached = win.start + win.full * HOP; }
-        eps.push({ t0: t, side: side, from: from, to: to, tries: tries });
+        if (!r) return false;
+        // Plan each hop. Often the choice is quick; sometimes there is doubt,
+        // and one or two other dots are leaned toward and let go before the
+        // line commits to the hop it chose.
+        var plans = [], clock = ENDS;
+        for (var k = 0; k < r.path.length - 1; k++) {
+          var others = [];
+          for (j = 0; j < r.opts[k].length; j++) if (r.opts[k][j] !== r.path[k + 1]) others.push(r.opts[k][j]);
+          var roll = Math.random();
+          var doubts = Math.min(others.length, roll < 0.45 ? 0 : (roll < 0.85 ? 1 : 2));
+          var probes = [];
+          while (probes.length < doubts) {
+            var c = pick(others);
+            if (probes.indexOf(c) < 0) probes.push(c);
+          }
+          var commit = clock + LOOK + probes.length * PROBE;
+          plans.push({ start: clock, probes: probes, commit: commit });
+          clock = commit + STEP;
+        }
+        eps.push({ t0: t, side: side, from: from, to: to, route: r.path, opts: r.opts, plans: plans, reached: clock });
         return true;
       }
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
@@ -174,21 +176,34 @@
         ctx.fill();
       }
       function ease(v) { return 0.5 - 0.5 * Math.cos(3.1416 * clamp(v)); }
-      function drawTry(tr, age, alpha, extra, looking) {
-        for (var k = 0; k < tr.hops; k++) {
-          var hopStart = tr.start + k * HOP;
-          if (age < hopStart) break;
-          if (looking) {
-            // Before the hop, the dots within reach glow while one is chosen.
-            var lp = (age - hopStart) / (LOOK + STEP * 0.6);
+      function drawRoute(ep, age, alpha, extra, live) {
+        for (var k = 0; k < ep.plans.length; k++) {
+          var pl = ep.plans[k];
+          if (age < pl.start) break;
+          var A = pts[ep.route[k]], B = pts[ep.route[k + 1]];
+          if (live) {
+            // Weighing the next hop: the dots within reach glow softly.
+            var lp = (age - pl.start) / (pl.commit - pl.start + STEP * 0.6);
             if (lp < 1) {
-              var g = Math.sin(3.1416 * lp), o = tr.opts[k];
+              var g = Math.sin(3.1416 * lp), o = ep.opts[k];
               for (var q = 0; q < o.length; q++) dot(pts[o[q]], 1.3 + 1.1 * g, 0.08 + 0.2 * g);
             }
+            // Doubt: a short, faint lean toward another dot, then pulling back.
+            for (var j = 0; j < pl.probes.length; j++) {
+              var pp = (age - pl.start - LOOK - j * PROBE) / PROBE;
+              if (pp <= 0 || pp >= 1) continue;
+              var C = pts[pl.probes[j]], ext = 0.45 * Math.sin(3.1416 * pp);
+              ctx.lineWidth = 1;
+              ctx.strokeStyle = 'rgba(0,31,63,0.13)';
+              ctx.beginPath();
+              ctx.moveTo(A.x, A.y);
+              ctx.lineTo(A.x + (C.x - A.x) * ext, A.y + (C.y - A.y) * ext);
+              ctx.stroke();
+              dot(C, 2.2, 0.1 + 0.15 * Math.sin(3.1416 * pp));
+            }
           }
-          var grow = ease((age - hopStart - LOOK) / STEP);
+          var grow = ease((age - pl.commit) / STEP);
           if (grow <= 0) break;
-          var A = pts[tr.route[k]], B = pts[tr.route[k + 1]];
           ctx.lineWidth = 1 + 0.5 * extra;
           ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
           ctx.beginPath();
@@ -223,11 +238,10 @@
         }
         for (var e = eps.length - 1; e >= 0; e--) {
           var ep = eps[e], age = t - ep.t0;
-          var win = ep.tries[ep.tries.length - 1];
-          var shineStart = win.reached + 250;
+          var shineStart = ep.reached + 250;
           if (age > shineStart + SHINE + FADE) {
-            // The kept path settles into a faint trace that lingers.
-            memory.push({ route: win.route, side: ep.side, born: t });
+            // The finished path settles into a faint trace that lingers.
+            memory.push({ route: ep.route, side: ep.side, born: t });
             var mine = 0;
             for (var c = memory.length - 1; c >= 0; c--) {
               if (memory[c].side === ep.side && ++mine > MEMORY_MAX) memory.splice(c, 1);
@@ -238,23 +252,8 @@
           }
           var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
           var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
-          for (var r = 0; r < ep.tries.length - 1; r++) {
-            var tr = ep.tries[r];
-            if (age < tr.start) continue;
-            // A dead end: pause there, unsure, then let it go. A faint trace
-            // stays for the rest of the episode, a little more of the map.
-            var drop = 1 - clamp((age - tr.reached - STALL) / GIVE_UP);
-            drawTry(tr, age, (0.035 + 0.12 * drop) * keep, 0, age < tr.reached);
-            if (age >= tr.reached && drop > 0) {
-              var p = (age - tr.reached) / STALL, end = pts[tr.route[tr.hops]];
-              ctx.lineWidth = 1;
-              ctx.strokeStyle = 'rgba(0,31,63,' + (0.25 * drop * clamp(p * 3)) + ')';
-              ctx.beginPath();
-              ctx.arc(end.x, end.y, 5 + 1.5 * Math.sin(6.2832 * p), 0, 6.2832);
-              ctx.stroke();
-            }
-          }
-          if (age >= win.start) drawTry(win, age, 0.06 + (0.1 + 0.12 * shine) * keep, shine, age < win.reached);
+          // Once B is reached, the whole path lights up together.
+          drawRoute(ep, age, 0.06 + (0.1 + 0.16 * shine) * keep, shine, age < ep.reached);
           var appear = clamp(age / 500) * keep;
           dot(pts[ep.from], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
           dot(pts[ep.to], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
@@ -311,29 +310,26 @@
     #storyArt .pulse{transform-box:fill-box;transform-origin:center;}
     #storyArt .g-dots{opacity:1;transition:opacity .7s ease;}
     #storyArt.s1 .g-dots{opacity:0;}
+    /* The line only moves forward: A, hop 1, (doubt) hop 2, hop 3, B. Then the whole path lights up. */
     #storyArt .g-reach{opacity:0;transition:opacity .6s ease;}
-    #storyArt.s2 .g-reach,#storyArt.s4 .g-reach{opacity:1;}
+    #storyArt.s2 .g-reach{opacity:1;}
     #storyArt .opt{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
-    #storyArt.s2 .opt,#storyArt.s4 .opt-a{opacity:.7;animation:storyPulse 1.6s ease-in-out infinite;}
-    #storyArt.s4 .opt-b{opacity:.2;}
-    #storyArt .g-try,#storyArt .seg{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:1;}
-    #storyArt .g-try{stroke-width:1.5;opacity:.55;transition:stroke-dashoffset 1.2s ease,opacity .8s ease;}
-    #storyArt.s3 .g-try,#storyArt.s4 .g-try,#storyArt.s5 .g-try,#storyArt.s6 .g-try,#storyArt.s7 .g-try{stroke-dashoffset:0;}
-    #storyArt.s4 .g-try,#storyArt.s5 .g-try,#storyArt.s6 .g-try,#storyArt.s7 .g-try{opacity:.14;}
-    #storyArt .g-end{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
-    #storyArt.s3 .g-end{opacity:.8;transition-delay:1.1s;animation:storyPulse 1.2s ease-in-out infinite;}
-    #storyArt.s4 .g-end{opacity:.14;}
-    #storyArt .seg{stroke-width:1.8;transition:stroke-dashoffset .8s ease,stroke-width .8s ease;}
-    #storyArt.s0 .seg,#storyArt.s5 .seg1,#storyArt.s5 .seg2,#storyArt.s5 .seg3,#storyArt.s6 .seg,#storyArt.s7 .seg{stroke-dashoffset:0;}
-    #storyArt.s5 .seg2{transition-delay:.9s;}
-    #storyArt.s5 .seg3{transition-delay:1.8s;}
-    #storyArt.s6 .seg{stroke-width:2.8;transition:stroke-dashoffset .8s ease,stroke-width .8s ease .8s;}
+    #storyArt.s2 .opt-a,#storyArt.s2 .opt-b,#storyArt.s3 .opt-c,#storyArt.s3 .opt-d{opacity:.7;animation:storyPulse 1.6s ease-in-out infinite;}
+    #storyArt.s4 .opt-d{opacity:.7;animation:storyPulse 1.6s ease-in-out 2;}
+    #storyArt .seg,#storyArt .probe{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1;}
+    #storyArt .probe{stroke-width:1.3;opacity:.45;transition:stroke-dashoffset .9s ease,opacity .6s ease;}
+    #storyArt.s3 .probe{stroke-dashoffset:.5;transition-delay:.9s;}
+    #storyArt .seg{stroke-width:1.8;opacity:.75;transition:stroke-dashoffset .8s ease,stroke-width .8s ease,opacity .8s ease;}
+    #storyArt.s0 .seg,#storyArt.s3 .seg1,#storyArt.s4 .seg1,#storyArt.s4 .seg2,#storyArt.s5 .seg1,#storyArt.s5 .seg2,#storyArt.s5 .seg3,#storyArt.s6 .seg,#storyArt.s7 .seg{stroke-dashoffset:0;}
+    #storyArt.s4 .seg2{transition-delay:.9s;}
+    #storyArt.s0 .seg,#storyArt.s6 .seg,#storyArt.s7 .seg{opacity:1;}
+    #storyArt.s6 .seg{stroke-width:2.8;transition:stroke-dashoffset .8s ease,stroke-width .8s ease .8s,opacity .8s ease .8s;}
     #storyArt.s7 .seg{stroke-width:2;}
     #storyArt .hop{opacity:0;transition:opacity .3s ease;}
-    #storyArt.s0 .hop,#storyArt.s5 .hop,#storyArt.s6 .hop,#storyArt.s7 .hop{opacity:1;}
-    #storyArt.s5 .hop1{transition-delay:.8s;}
-    #storyArt.s5 .hop2{transition-delay:1.7s;}
-    #storyArt.s5 .hop3{transition-delay:2.6s;}
+    #storyArt.s0 .hop,#storyArt.s3 .hop1,#storyArt.s4 .hop1,#storyArt.s4 .hop2,#storyArt.s5 .hop,#storyArt.s6 .hop,#storyArt.s7 .hop{opacity:1;}
+    #storyArt.s3 .hop1{transition-delay:.7s;}
+    #storyArt.s4 .hop2{transition-delay:1.6s;}
+    #storyArt.s5 .hop3{transition-delay:.7s;}
     #storyArt .b-ring{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
     #storyArt.s6 .b-ring{opacity:.6;transition-delay:.8s;animation:storyPulse 1.6s ease-in-out infinite;}
     #storyArt .g-many{fill:none;stroke:#001f3f;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s ease;}
@@ -365,9 +361,9 @@
         <circle class="g-reach" cx="22" cy="60" r="85" fill="rgba(0,31,63,0.03)" stroke="rgba(0,31,63,0.35)" stroke-width="0.8" stroke-dasharray="3 3"/>
         <g class="g-dots" fill="rgba(0,31,63,0.35)"><circle cx="80" cy="30" r="2.6"/><circle cx="100" cy="74" r="2.6"/><circle cx="150" cy="58" r="2.6"/><circle cx="165" cy="22" r="2.6"/><circle cx="212" cy="72" r="2.6"/><circle cx="232" cy="38" r="2.6"/><circle cx="125" cy="40" r="2.6"/></g>
         <circle class="opt opt-a pulse" cx="80" cy="30" r="6"/><circle class="opt opt-b pulse" cx="100" cy="74" r="6"/>
+        <circle class="opt opt-c pulse" cx="150" cy="58" r="6"/><circle class="opt opt-d pulse" cx="165" cy="22" r="6"/>
         <g class="g-many"><polyline points="22,60 100,74 212,72 278,44"/><polyline points="22,60 125,40 232,38 278,44"/><polyline points="22,60 80,30 150,58 232,38 278,44"/><polyline points="22,60 100,74 125,40 165,22 278,44"/><polyline points="22,60 150,58 212,72 278,44"/></g>
-        <polyline class="g-try" pathLength="1" points="22,60 100,74 150,58"/>
-        <circle class="g-end pulse" cx="150" cy="58" r="5"/>
+        <line class="probe" pathLength="1" x1="80" y1="30" x2="150" y2="58"/>
         <line class="seg seg1" pathLength="1" x1="22" y1="60" x2="80" y2="30"/><line class="seg seg2" pathLength="1" x1="80" y1="30" x2="165" y2="22"/><line class="seg seg3" pathLength="1" x1="165" y1="22" x2="232" y2="38"/><line class="seg seg4" pathLength="1" x1="232" y1="38" x2="278" y2="44"/>
         <circle class="hop hop1" cx="80" cy="30" r="3.4" fill="#001f3f"/><circle class="hop hop2" cx="165" cy="22" r="3.4" fill="#001f3f"/><circle class="hop hop3" cx="232" cy="38" r="3.4" fill="#001f3f"/>
         <circle class="b-ring pulse" cx="278" cy="44" r="9"/>
@@ -388,15 +384,15 @@
       // The first step is the intro in my own voice; the drawing shows the finished path,
       // then clears and replays from step two on. Each step i has its own drawing state, s<i>.
       var steps = [
-        { t: 'Why the dots?', p: 'Hi, I’m Ghazal. You may have noticed the faint dots in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.',
-          pSmall: 'Hi, I’m Ghazal. On a larger screen, faint dots move in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.' },
+        { t: 'Why the dots?', p: 'Hi, I’m Ghazal. You may have noticed the faint dots in the margins of this page. Two of them light up, and a line sets out from one toward the other, one hop at a time. At each dot it weighs where to go next, sometimes hesitates, and then moves on, until it reaches the other dot and the whole path lights up. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.',
+          pSmall: 'Hi, I’m Ghazal. On a larger screen, faint dots move in the margins of this page. Two of them light up, and a line sets out from one toward the other, one hop at a time. At each dot it weighs where to go next, sometimes hesitates, and then moves on, until it reaches the other dot and the whole path lights up. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.' },
         { t: 'Point A, point B.', p: 'We usually know where we stand, and roughly where we want to be. The line between the two is almost never straight.' },
         { t: 'Dots in between.', p: 'Between here and there are milestones, people, and small choices. Nobody picks the whole route at once. We only ever pick the next hop, using the little we can see from where we stand.' },
-        { t: 'A hop that doesn’t hold.', p: 'Sometimes we head toward a dot, and halfway there it stops making sense. A dead end. We pause, unsure where to go next.' },
-        { t: 'Thinking it again.', p: 'So we step back and look again. In machine learning, a wrong guess is not a failure. It is the error a model learns from. The path we let go of did the same for us: it showed us a little more of the map.' },
-        { t: 'The next hop.', p: 'Then we choose. Not because we are certain, but because we have looked enough. One dot, then the next.' },
-        { t: 'Looking back.', p: 'When the line finally connects, it looks as if the path was always there. It wasn’t. It was made one doubt and one decision at a time.' },
-        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations, detours, and dead ends, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'You may have felt this in your own life too: a moment when the detours and dead ends suddenly made sense, and the path you were on finally lit up. ~ Ghazal' }
+        { t: 'A hop we doubt.', p: 'We take the first hop. At the next dot, the way forward is less clear. We lean toward one option, and halfway there we hesitate: is this really the one?' },
+        { t: 'Thinking it again.', p: 'So we think it again, and choose a different hop. In machine learning, a wrong guess is not a failure. It is the error a model learns from. The hop we almost took did the same for us: it showed us a little more of the map.' },
+        { t: 'The next hop.', p: 'We don’t go back to redo the hops behind us. We keep moving forward, not because we are certain, but because we have looked enough. One dot, then the next.' },
+        { t: 'Looking back.', p: 'When the line finally reaches B, the whole path lights up, and it looks as if it was always there. It wasn’t. It was made one doubt and one decision at a time.' },
+        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations and second thoughts, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'You may have felt this in your own life too: a moment when the doubts along the way suddenly made sense, and the path you were on finally lit up. ~ Ghazal' }
       ];
       var btn = document.getElementById('storyBtn'), overlay = document.getElementById('storyOverlay');
       var art = document.getElementById('storyArt'), text = document.getElementById('storyText');
