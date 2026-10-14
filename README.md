@@ -38,268 +38,165 @@
   <canvas id="bgPattern" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
   <script>
     (function () {
-      // Background: sparse faint dots in the left and right page margins only,
-      // never behind the content. It acts out the "Between A and B" story.
-      // Each margin runs its own slow cycle:
-      //   1. two dots light up (point A and point B), near or far apart;
-      //   2. a line sets out from one toward the other and only ever moves
-      //      forward, one hop at a time. It never goes back to redo a hop;
-      //   3. at each dot it weighs the next hop: the dots within reach glow
-      //      softly (the little that can be seen from where it stands). Often
-      //      it decides at once. Sometimes it doubts: it leans toward one dot
-      //      with a short, faint reach, maybe toward another, and then commits
-      //      to the hop it finally chose. Sometimes an old doubt comes back
-      //      instead: the option it passed two hops earlier lights up again
-      //      ("what if I had gone there?"), and still the line goes forward.
-      //      Doubts are never erased; each leaves a faint short stub;
-      //   4. when it reaches the other dot, the whole path lights up, then
-      //      settles into a very faint trace that fades out after a few seconds;
-      //   5. as soon as a path has lit up, a new pair of dots lights up
-      //      somewhere else in that margin, away from the path just finished,
-      //      and the story starts again.
-      // It starts once the status popup has been closed. The margins follow the
-      // window size; on a narrow screen with no margins nothing is drawn.
+      // Background: the "Between A and B" story, played in the left and right
+      // page margins only, never behind the content. Three designed patterns,
+      // each running the full height of the screen, repeat one after another:
+      //   1. the dots of the pattern appear, with A at the top and B at the
+      //      bottom;
+      //   2. a line moves from A toward B, one hop at a time, and only ever
+      //      forward (down). It never goes back and never stops halfway;
+      //   3. at a few hops there is more than one way on. The line reaches
+      //      toward two or three dots at the same time, hesitates (the tips
+      //      pulse), then picks one and carries on. The other branches shrink
+      //      to faint stubs;
+      //   4. when it reaches B, a glowing pulse runs along the path from A to B
+      //      and the whole path lights up, then fades. The next pattern begins.
+      // The right margin plays the patterns mirrored and offset in time. It
+      // starts once the status popup has been closed. On a narrow screen with
+      // no margins nothing is drawn.
       var canvas = document.getElementById('bgPattern');
       if (!canvas || !canvas.getContext) return;
       var ctx = canvas.getContext('2d');
-      var GAP = 110, REACH = 210;
-      var ENDS = 900, BACK = 1000, LOOK = 420, PROBE = 750, STEP = 520, SHINE = 1300, FADE = 1400;
-      // Old paths leave only a brief, faint trace, so the margins never get
-      // cluttered and the path being drawn now stays easy to follow.
-      var MEMORY = 12000, MEMORY_MAX = 2;
+      var APPEAR = 700, HOP = 700, BRANCH = 800, DOUBT = 1100, DECIDE = 550;
+      var TRAVEL = 1500, GLOW = 1500, FADE = 1200, REST = 900, PAD = 26;
+      var INK = '0,31,63', LIGHT = '40,140,255';
+      // Each pattern: the path taken from A (first) to B (last), in margin
+      // coordinates (x across the margin, y down the screen, both 0 to 1), and
+      // the other dots reached toward at the hops where there was a choice,
+      // keyed by hop number.
+      var PATTERNS = [
+        { path: [[0.5, 0.05], [0.3, 0.19], [0.55, 0.35], [0.45, 0.51], [0.25, 0.66], [0.42, 0.8], [0.62, 0.95]],
+          forks: { 1: [[0.15, 0.36]], 3: [[0.5, 0.68], [0.75, 0.64]] } },
+        { path: [[0.25, 0.05], [0.6, 0.17], [0.7, 0.31], [0.85, 0.46], [0.6, 0.6], [0.35, 0.75], [0.5, 0.95]],
+          forks: { 2: [[0.4, 0.45]], 4: [[0.72, 0.77]] } },
+        { path: [[0.7, 0.05], [0.35, 0.2], [0.5, 0.34], [0.3, 0.48], [0.45, 0.63], [0.65, 0.78], [0.4, 0.95]],
+          forks: { 0: [[0.82, 0.22]], 3: [[0.15, 0.62], [0.75, 0.6]] } }
+      ];
+      PATTERNS.forEach(function (p) {
+        var c = APPEAR;
+        p.hops = [];
+        for (var k = 0; k < p.path.length - 1; k++) {
+          var alts = p.forks[k] || null;
+          p.hops.push({ start: c, alts: alts, decide: c + BRANCH + DOUBT });
+          c += alts ? BRANCH + DOUBT + DECIDE : HOP;
+        }
+        p.reached = c;
+        p.total = c + TRAVEL + GLOW + FADE;
+      });
       var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var w = 0, h = 0, pts = [], eps = [], memory = [];
-      var lastFrame = 0, began = false, nextAt = { '-1': 0, '1': 0 }, lastRoute = { '-1': [], '1': [] };
-      function fill(from, to, sideId) {
-        // Spread dots evenly over one margin, however wide or narrow it is.
-        var width = to - from;
-        if (width < 36) return;
-        var cols = Math.max(1, Math.round(width / GAP));
-        var colW = width / cols;
-        var sway = Math.max(0, Math.min(GAP * 0.35, colW / 2 - 10));
-        for (var c = 0; c < cols; c++) {
-          for (var y = GAP / 2; y < h; y += GAP) {
-            pts.push({
-              x: from + (c + 0.5) * colW + (Math.random() * 2 - 1) * sway,
-              y: y + (Math.random() - 0.5) * GAP * 0.7,
-              side: sideId
-            });
-          }
-        }
-      }
-      function build() {
-        // Dots live only in the space left and right of the content column. As
-        // the window narrows the margins shrink, and once they are gone (tablet
-        // and phone widths) there are no dots at all.
-        pts = [];
-        eps = [];
-        memory = [];
-        lastRoute = { '-1': [], '1': [] };
-        var column = document.querySelector('.wrapper');
-        if (!column) return;
-        var r = column.getBoundingClientRect();
-        fill(0, r.left - 30, -1);
-        fill(r.right + 30, w, 1);
-        // The story card reads this to know whether the reader can see the dots.
-        window.marginDots = pts.length > 0;
-      }
-      function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
-      function gapBetween(i, j) {
-        return Math.sqrt(Math.pow(pts[i].x - pts[j].x, 2) + Math.pow(pts[i].y - pts[j].y, 2));
-      }
-      function makeRoute(from, to, side, block) {
-        // Wander from one end dot to the other in any direction, each hop
-        // landing a little closer to the target, away from the dots in block.
-        // For each hop, the dots that were within reach (the options) are kept
-        // so they can be weighed.
-        var cur = from, route = [from], opts = [], used = {};
-        for (var b in block) used[b] = true;
-        used[from] = true;
-        for (var guard = 0; guard < 40; guard++) {
-          var left = gapBetween(cur, to), near = [];
-          for (var j = 0; j < pts.length; j++) {
-            if (j === to || used[j] || pts[j].side !== side) continue;
-            if (gapBetween(cur, j) <= REACH && gapBetween(j, to) < left - GAP * 0.15) near.push(j);
-          }
-          var canFinish = left <= REACH * 1.15;
-          if (canFinish && (!near.length || (route.length > 1 && Math.random() < 0.5))) {
-            opts.push(near.concat([to]));
-            route.push(to);
-            return { path: route, opts: opts };
-          }
-          if (!near.length) return null;
-          opts.push(canFinish ? near.concat([to]) : near);
-          cur = pick(near);
-          used[cur] = true;
-          route.push(cur);
-        }
-        return null;
-      }
-      function startEpisode(t, side) {
-        var j, mine = [], far = [], fresh = [], block = {}, recent = lastRoute[side];
-        for (j = 0; j < recent.length; j++) block[recent[j]] = true;
-        for (j = 0; j < pts.length; j++) if (pts[j].side === side && !block[j]) mine.push(j);
-        if (mine.length < 3) return false;
-        // The new pair goes somewhere else: prefer a first dot well away from
-        // the path that just lit up.
-        for (j = 0; j < mine.length; j++) {
-          var clear = true;
-          for (var q = 0; q < recent.length && clear; q++) if (gapBetween(mine[j], recent[q]) < GAP * 1.5) clear = false;
-          if (clear) fresh.push(mine[j]);
-        }
-        // A first dot, and a second one a short, medium or long way off in any
-        // direction.
-        var from = pick(fresh.length ? fresh : mine), roll = Math.random();
-        var lo = roll < 0.35 ? 1.4 : (roll < 0.75 ? 2.6 : 4.5);
-        var hi = roll < 0.35 ? 2.6 : (roll < 0.75 ? 4.5 : 99);
-        for (j = 0; j < mine.length; j++) {
-          var d = gapBetween(from, mine[j]) / GAP;
-          if (d >= lo && d < hi) far.push(mine[j]);
-        }
-        if (!far.length) return false;
-        var to = pick(far);
-        var r = null;
-        for (var n = 0; n < 20 && !r; n++) {
-          // Keep clear of the last path if possible; otherwise allow crossing it.
-          r = makeRoute(from, to, side, n < 12 ? block : {});
-          if (r && r.path.length < 3) r = null;
-        }
-        if (!r) return false;
-        // Plan each hop. Often the choice is quick; sometimes there is doubt,
-        // and one or two other dots are leaned toward before the line commits
-        // to the hop it chose. From the third hop on, an old doubt may come
-        // back first: an option passed two hops earlier.
-        var plans = [], clock = ENDS;
-        for (var k = 0; k < r.path.length - 1; k++) {
-          var others = [], back = null;
-          for (j = 0; j < r.opts[k].length; j++) if (r.opts[k][j] !== r.path[k + 1]) others.push(r.opts[k][j]);
-          if (k >= 2 && Math.random() < 0.3) {
-            var passed = [];
-            for (j = 0; j < r.opts[k - 2].length; j++) if (r.opts[k - 2][j] !== r.path[k - 1]) passed.push(r.opts[k - 2][j]);
-            if (passed.length) back = { from: r.path[k - 2], to: pick(passed) };
-          }
-          var roll = Math.random();
-          var doubts = Math.min(others.length, roll < 0.45 ? 0 : (roll < 0.85 ? 1 : 2));
-          var probes = [];
-          while (probes.length < doubts) {
-            var c = pick(others);
-            if (probes.indexOf(c) < 0) probes.push(c);
-          }
-          var lookAt = clock + (back ? BACK : 0);
-          var commit = lookAt + LOOK + probes.length * PROBE;
-          plans.push({ start: clock, back: back, lookAt: lookAt, probes: probes, commit: commit });
-          clock = commit + STEP;
-        }
-        eps.push({ t0: t, side: side, from: from, to: to, route: r.path, opts: r.opts, plans: plans, reached: clock });
-        return true;
-      }
+      var w = 0, h = 0, margins = {}, lastFrame = 0, sides = null;
       function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
-      function dot(pt, radius, alpha) {
-        ctx.fillStyle = 'rgba(0,31,63,' + alpha + ')';
+      function ease(v) { return 0.5 - 0.5 * Math.cos(3.1416 * clamp(v)); }
+      function measure() {
+        // The margins are the space left and right of the content column.
+        margins = {};
+        var column = document.querySelector('.wrapper');
+        if (column) {
+          var r = column.getBoundingClientRect();
+          if (r.left - 30 >= 60) margins[-1] = { x0: 0, x1: r.left - 30 };
+          if (w - r.right - 30 >= 60) margins[1] = { x0: r.right + 30, x1: w };
+        }
+        // The story card reads this to know whether the reader can see the dots.
+        window.marginDots = !!(margins[-1] || margins[1]);
+      }
+      function at(m, side, pt) {
+        var x = side < 0 ? pt[0] : 1 - pt[0];
+        return { x: m.x0 + PAD + x * (m.x1 - m.x0 - 2 * PAD), y: PAD + pt[1] * (h - 2 * PAD) };
+      }
+      function dot(P, r, rgb, a) {
+        ctx.fillStyle = 'rgba(' + rgb + ',' + a + ')';
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, radius, 0, 6.2832);
+        ctx.arc(P.x, P.y, r, 0, 6.2832);
         ctx.fill();
       }
-      function ease(v) { return 0.5 - 0.5 * Math.cos(3.1416 * clamp(v)); }
-      function lean(P, C, p, keep) {
-        // A doubt: a short, faint reach from P toward C. While it is felt it
-        // is brighter and C glows; afterwards a faint stub stays, not erased.
-        if (p <= 0) return;
-        var ext = 0.4 * ease(p * 2), felt = p < 1 ? Math.sin(3.1416 * p) : 0;
+      function ring(P, r, rgb, a) {
         ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(0,31,63,' + ((0.05 + 0.12 * felt) * keep) + ')';
+        ctx.strokeStyle = 'rgba(' + rgb + ',' + a + ')';
+        ctx.beginPath();
+        ctx.arc(P.x, P.y, r, 0, 6.2832);
+        ctx.stroke();
+      }
+      function line(P, Q, g, rgb, a, width) {
+        if (g <= 0) return;
+        ctx.lineWidth = width;
+        ctx.strokeStyle = 'rgba(' + rgb + ',' + a + ')';
         ctx.beginPath();
         ctx.moveTo(P.x, P.y);
-        ctx.lineTo(P.x + (C.x - P.x) * ext, P.y + (C.y - P.y) * ext);
+        ctx.lineTo(P.x + (Q.x - P.x) * g, P.y + (Q.y - P.y) * g);
         ctx.stroke();
-        if (felt > 0) dot(C, 2.2, 0.1 + 0.15 * felt);
       }
-      function drawRoute(ep, age, alpha, extra, live, keep) {
-        for (var k = 0; k < ep.plans.length; k++) {
-          var pl = ep.plans[k];
-          if (age < pl.start) break;
-          var A = pts[ep.route[k]], B = pts[ep.route[k + 1]];
-          // An old doubt comes back: the option passed two hops earlier.
-          if (pl.back) lean(pts[pl.back.from], pts[pl.back.to], (age - pl.start) / BACK, keep);
-          // Doubt about this hop: leaning toward other dots before choosing.
-          for (var j = 0; j < pl.probes.length; j++) {
-            lean(A, pts[pl.probes[j]], (age - pl.lookAt - LOOK - j * PROBE) / PROBE, keep);
-          }
-          if (live && age >= pl.lookAt) {
-            // Weighing the next hop: the dots within reach glow softly.
-            var lp = (age - pl.lookAt) / (pl.commit - pl.lookAt + STEP * 0.6);
-            if (lp < 1) {
-              var g = Math.sin(3.1416 * lp), o = ep.opts[k];
-              for (var q = 0; q < o.length; q++) dot(pts[o[q]], 1.3 + 1.1 * g, 0.08 + 0.2 * g);
+      function drawPattern(p, m, side, a) {
+        var k, j, pts = p.path.map(function (pt) { return at(m, side, pt); });
+        var L = a - p.reached;
+        var fade = 1 - clamp((L - TRAVEL - GLOW) / FADE), show = clamp(a / APPEAR) * fade;
+        // The map: every dot of this pattern, faint.
+        for (k = 0; k < pts.length; k++) dot(pts[k], 1.6, INK, 0.14 * show);
+        for (k in p.forks) for (j = 0; j < p.forks[k].length; j++) dot(at(m, side, p.forks[k][j]), 1.6, INK, 0.14 * show);
+        // The hops, forward only.
+        for (k = 0; k < p.hops.length; k++) {
+          var hp = p.hops[k], A = pts[k], B = pts[k + 1];
+          if (a < hp.start) break;
+          var g;
+          if (!hp.alts) {
+            g = ease((a - hp.start) / HOP);
+          } else {
+            // Several ways on at once: all branches grow together, the tips
+            // pulse while it hesitates, then one is chosen and the rest shrink
+            // back to faint stubs.
+            var reach = 0.55 * ease((a - hp.start) / BRANCH), decided = a >= hp.decide;
+            var q = (a - hp.start - BRANCH) / DOUBT, doubting = q > 0 && !decided;
+            var pulse = doubting ? 0.5 + 0.5 * Math.sin(q * 6.2832 * 1.5) : 0;
+            var drop = ease((a - hp.decide) / DECIDE);
+            var ends = hp.alts.map(function (pt) { return at(m, side, pt); });
+            for (j = 0; j < ends.length; j++) {
+              var stub = decided ? 0.55 - 0.25 * drop : reach;
+              line(A, ends[j], stub, INK, (0.3 - 0.22 * drop) * fade, 1.3);
+              if (doubting) ring(ends[j], 4 + 2 * pulse, INK, 0.3 * show);
             }
+            if (doubting) ring(B, 4 + 2 * pulse, INK, 0.3 * show);
+            g = decided ? 0.55 + 0.45 * ease((a - hp.decide) / DECIDE) : reach;
           }
-          var grow = ease((age - pl.commit) / STEP);
-          if (grow <= 0) break;
-          ctx.lineWidth = 1 + 0.5 * extra;
-          ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
-          ctx.beginPath();
-          ctx.moveTo(A.x, A.y);
-          ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
-          ctx.stroke();
-          if (grow > 0.99) dot(B, 2 + 0.6 * extra, alpha * 1.2);
+          line(A, B, g, INK, 0.34 * fade, 1.4);
+          if (g > 0.99) dot(B, 2.4, INK, 0.5 * fade);
         }
-      }
-      function trace(route, alpha) {
-        // A settled path from an earlier episode, drawn very faintly.
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(0,31,63,' + alpha + ')';
-        for (var k = 0; k < route.length - 1; k++) {
-          var A = pts[route[k]], B = pts[route[k + 1]];
-          ctx.beginPath();
-          ctx.moveTo(A.x, A.y);
-          ctx.lineTo(B.x, B.y);
-          ctx.stroke();
-          dot(B, 2, alpha * 1.2);
+        // Reaching B: a glowing pulse runs from A to B, then the whole path
+        // lights up and fades.
+        if (L > 0) {
+          var lens = [], total = 0;
+          for (k = 0; k < pts.length - 1; k++) {
+            lens.push(Math.sqrt(Math.pow(pts[k + 1].x - pts[k].x, 2) + Math.pow(pts[k + 1].y - pts[k].y, 2)));
+            total += lens[k];
+          }
+          var u = ease(L / TRAVEL) * total, glow = (1 - 0.45 * clamp((L - TRAVEL) / GLOW)) * fade;
+          ctx.save();
+          ctx.shadowColor = 'rgba(' + LIGHT + ',' + (0.9 * glow) + ')';
+          ctx.shadowBlur = 12;
+          var head = pts[0];
+          for (k = 0; k < lens.length && u > 0; k++) {
+            var part = Math.min(1, u / lens[k]);
+            line(pts[k], pts[k + 1], part, LIGHT, 0.8 * glow, 2.2);
+            head = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * part, y: pts[k].y + (pts[k + 1].y - pts[k].y) * part };
+            if (part >= 1) dot(pts[k + 1], 3, LIGHT, 0.9 * glow);
+            u -= lens[k];
+          }
+          dot(pts[0], 3, LIGHT, 0.9 * glow);
+          if (L < TRAVEL) dot(head, 4.5, '170,215,255', 1);
+          ctx.restore();
         }
+        // A and B.
+        dot(pts[0], 3.6, INK, 0.55 * show);
+        dot(pts[pts.length - 1], 3.6, INK, 0.55 * show);
       }
       function draw(t) {
         ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < pts.length; i++) dot(pts[i], 1.3, 0.08);
         ctx.lineCap = 'round';
-        // Many earlier paths, side by side: slowly they add up to a pattern.
-        for (var m = memory.length - 1; m >= 0; m--) {
-          var life = 1 - clamp((t - memory[m].born) / MEMORY);
-          if (life <= 0) { memory.splice(m, 1); continue; }
-          trace(memory[m].route, 0.06 * life);
-        }
-        for (var e = eps.length - 1; e >= 0; e--) {
-          var ep = eps[e], age = t - ep.t0;
-          var shineStart = ep.reached + 250;
-          if (age > shineStart + SHINE + FADE) {
-            // The finished path settles into a faint trace that lingers.
-            memory.push({ route: ep.route, side: ep.side, born: t });
-            var mine = 0;
-            for (var c = memory.length - 1; c >= 0; c--) {
-              if (memory[c].side === ep.side && ++mine > MEMORY_MAX) memory.splice(c, 1);
-            }
-            eps.splice(e, 1);
-            continue;
-          }
-          if (!ep.lit && age > shineStart + SHINE * 0.6) {
-            // The path has lit up: move on to other dots while it settles.
-            ep.lit = true;
-            lastRoute[ep.side] = ep.route;
-            nextAt[ep.side] = t + 300;
-          }
-          var shine = age > shineStart ? Math.sin(3.1416 * clamp((age - shineStart) / SHINE)) : 0;
-          var keep = 1 - clamp((age - shineStart - SHINE) / FADE);
-          // Once B is reached, the whole path lights up together.
-          drawRoute(ep, age, 0.06 + (0.1 + 0.16 * shine) * keep, shine, age < ep.reached, keep);
-          var appear = clamp(age / 500) * keep;
-          dot(pts[ep.from], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
-          dot(pts[ep.to], 3 + 0.6 * shine, (0.3 + 0.1 * shine) * appear);
-        }
-      }
-      function busy(side) {
-        // A margin is busy only while a path is still being found; once it has
-        // lit up, the next pair can start.
-        for (var e = 0; e < eps.length; e++) if (eps[e].side === side && !eps[e].lit) return true;
-        return false;
+        if (!sides) return;
+        [-1, 1].forEach(function (side) {
+          var s = sides[side], m = margins[side];
+          var a = t - s.t0;
+          if (a < 0 || !m) return;
+          drawPattern(PATTERNS[s.idx], m, side, a);
+        });
       }
       function resize() {
         var ratio = window.devicePixelRatio || 1;
@@ -308,18 +205,24 @@
         canvas.width = w * ratio;
         canvas.height = h * ratio;
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        build();
-        draw(0);
+        measure();
+        if (still) {
+          // Without motion, show the first pattern's path once, at rest.
+          sides = { '-1': { idx: 0, t0: -PATTERNS[0].reached }, '1': { idx: 1, t0: -PATTERNS[1].reached } };
+          draw(0);
+        }
       }
       function tick(t) {
         if (t - lastFrame > 30) {
           lastFrame = t;
           if (window.popupClosed) {
-            // The right margin starts a little after the left one, so the two
-            // are never in step.
-            if (!began) { began = true; nextAt[-1] = t; nextAt[1] = t + 2600; }
-            if (!busy(-1) && t >= nextAt[-1]) startEpisode(t, -1);
-            if (!busy(1) && t >= nextAt[1]) startEpisode(t, 1);
+            // The right margin starts a little after the left one, with the
+            // next pattern, so the two are never in step.
+            if (!sides) sides = { '-1': { idx: 0, t0: t }, '1': { idx: 1, t0: t + 2500 } };
+            [-1, 1].forEach(function (side) {
+              var s = sides[side];
+              if (t - s.t0 > PATTERNS[s.idx].total + REST) { s.idx = (s.idx + 1) % PATTERNS.length; s.t0 = t; }
+            });
           }
           draw(t);
         }
