@@ -278,7 +278,7 @@
   <div id="storyOverlay">
     <div id="storyCard" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
       <button class="x" type="button" id="storyClose" aria-label="Close">✕</button>
-      <div class="kicker">A data story · Between A and B</div>
+      <div class="kicker">A data story by Ghazal · Between A and B</div>
       <svg id="storyArt" viewBox="0 0 300 96" aria-hidden="true">
         <g class="g-dots" fill="rgba(0,31,63,0.35)"><circle cx="80" cy="30" r="2.6"/><circle cx="100" cy="74" r="2.6"/><circle cx="150" cy="58" r="2.6"/><circle cx="165" cy="22" r="2.6"/><circle cx="212" cy="72" r="2.6"/><circle cx="232" cy="38" r="2.6"/><circle cx="125" cy="40" r="2.6"/></g>
         <g class="g-many"><polyline points="22,60 100,74 212,72 278,44"/><polyline points="22,60 125,40 232,38 278,44"/><polyline points="22,60 80,30 150,58 232,38 278,44"/><polyline points="22,60 100,74 125,40 165,22 278,44"/><polyline points="22,60 150,58 212,72 278,44"/></g>
@@ -298,15 +298,18 @@
   </div>
   <script>
     (function () {
-      // "Between A and B": the same idea the margin dots act out, told in six hops.
+      // "Between A and B": the same idea the margin dots act out, told one hop at a time.
+      // The first step is the intro in my own voice; the drawing shows the finished path,
+      // then clears and replays from step two on.
       var steps = [
+        { t: 'Why the dots?', p: 'Hi, I’m Ghazal. You may have noticed the faint dots in the margins of this page. Two of them light up, and a line tries to reach from one to the other. Sometimes it stops, fades, and tries another way, until one path finally connects. I put them there because that is how my research and my life have felt to me: rarely a straight line, and always one hop at a time. Here is the story behind them.' },
         { t: 'Point A, point B.', p: 'We usually know where we stand, and roughly where we want to be. The line between the two is almost never straight.' },
         { t: 'Dots in between.', p: 'Between here and there are milestones, people, and small choices. Nobody picks the whole route at once. We only ever pick the next hop, using the little we can see from where we stand.' },
         { t: 'A hop that doesn’t hold.', p: 'Sometimes we head toward a dot, and halfway there it stops making sense. A dead end. We pause, unsure where to go next.' },
         { t: 'Thinking it again.', p: 'So we step back and look again. In machine learning, a wrong guess is not a failure. It is the error a model learns from. The path we let go of did the same for us: it showed us a little more of the map.' },
         { t: 'The next hop.', p: 'Then we choose. Not because we are certain, but because we have looked enough. One dot, then the next.' },
         { t: 'Looking back.', p: 'When the line finally connects, it looks as if the path was always there. It wasn’t. It was made one doubt and one decision at a time.' },
-        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations, detours, and dead ends, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'The faint dots moving in the margins of this page tell this story again and again, each time by a different path.' }
+        { t: 'Seen from above.', p: 'One path tells you very little. Lay many of them side by side, with their hesitations, detours, and dead ends, and a shape appears. That is how machine learning reads behavior: not one choice at a time, but the pattern that many choices form. Our lives draw that kind of pattern too. We just see it one hop at a time.', note: 'Next time the dots in the margins light up, watch which way they choose. It is never the same path twice. ~ Ghazal' }
       ];
       var btn = document.getElementById('storyBtn'), overlay = document.getElementById('storyOverlay');
       var art = document.getElementById('storyArt'), text = document.getElementById('storyText');
@@ -315,8 +318,8 @@
       var i = 0, isOpen = false, swap = null;
       for (var k = 0; k < steps.length; k++) hops.innerHTML += (k ? '<i></i>' : '') + '<span></span>';
       function render(fade) {
-        var cls = [];
-        for (var k = 1; k <= i; k++) cls.push('a' + k);
+        var cls = i === 0 ? ['a1', 'a4'] : [];
+        for (var k = 1; k < i; k++) cls.push('a' + k);
         art.setAttribute('class', cls.join(' '));
         var marks = hops.children;
         for (var m = 0; m < marks.length; m++) marks[m].className = (m <= i * 2) ? 'on' : '';
