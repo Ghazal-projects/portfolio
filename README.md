@@ -1,12 +1,12 @@
 <body>
-  <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(85,85,85,0);transition:background 0.5s ease;z-index:9998;display:none;">
-    <div id="notif" style="background:rgba(255,255,255,0.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(85,85,85,0.25);color:#111;padding:26px 44px 22px;border-radius:8px;border-top:4px solid #555555;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,0.25);width:max-content;max-width:92vw;box-sizing:border-box;position:fixed;top:50%;left:50%;transform:translate(-50%,-44%);opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;margin:0;text-wrap:balance;">
+  <div id="notifOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,31,63,0);transition:background 0.5s ease;z-index:9998;display:none;">
+    <div id="notif" style="background:rgba(255,255,255,0.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,31,63,0.25);color:#111;padding:26px 44px 22px;border-radius:8px;border-top:4px solid #001f3f;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,0.25);width:max-content;max-width:92vw;box-sizing:border-box;position:fixed;top:50%;left:50%;transform:translate(-50%,-44%);opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;margin:0;text-wrap:balance;">
       <span onclick="closeNotif()" style="position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;" aria-label="Close">✕</span>
-      <div style="font-size:20px;font-weight:600;color:#555555;margin-bottom:8px;">On the academic job market, 2026–27</div>
+      <div style="font-size:20px;font-weight:600;color:#001f3f;margin-bottom:8px;">On the academic job market, 2026–27</div>
       <div style="font-size:16px;line-height:1.5;">Seeking tenure-track faculty and postdoctoral positions</div>
       <div style="margin-top:16px;">
-        <a href="research.html" style="display:inline-block;margin:0 4px;padding:6px 14px;border-radius:5px;background:#555555;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Research</a>
-        <a href="assets/Ghazal_Abdollahi_CV.pdf" style="display:inline-block;margin:0 4px;padding:5px 14px;border-radius:5px;border:1px solid #555555;color:#555555;font-size:14px;font-weight:600;text-decoration:none;">Short CV</a>
+        <a href="research.html" style="display:inline-block;margin:0 4px;padding:6px 14px;border-radius:5px;background:#001f3f;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Research</a>
+        <a href="assets/Ghazal_Abdollahi_CV.pdf" style="display:inline-block;margin:0 4px;padding:5px 14px;border-radius:5px;border:1px solid #001f3f;color:#001f3f;font-size:14px;font-weight:600;text-decoration:none;">Short CV</a>
       </div>
     </div>
   </div>
@@ -18,7 +18,7 @@
         window.popupClosed = true;
         card.style.opacity = '0';
         card.style.transform = 'translate(-50%,-44%)';
-        overlay.style.background = 'rgba(85,85,85,0)';
+        overlay.style.background = 'rgba(0,31,63,0)';
         setTimeout(function () { overlay.style.display = 'none'; }, 500);
       };
       overlay.addEventListener('click', function (e) { if (e.target === overlay) closeNotif(); });
@@ -29,7 +29,7 @@
           setTimeout(function () {
             card.style.opacity = '1';
             card.style.transform = 'translate(-50%,-50%)';
-            overlay.style.background = 'rgba(85,85,85,0.08)';
+            overlay.style.background = 'rgba(0,31,63,0.08)';
           }, 30);
         }, 500);
       });
@@ -171,18 +171,18 @@
           }
           var u = ease(L / TRAVEL) * total, glow = (1 - 0.45 * clamp((L - TRAVEL) / GLOW)) * fade;
           ctx.save();
-          ctx.shadowColor = 'rgba(' + LIGHT + ',' + (0.9 * glow) + ')';
-          ctx.shadowBlur = 12;
+          ctx.shadowColor = 'rgba(' + LIGHT + ',' + (0.5 * glow) + ')';
+          ctx.shadowBlur = 5;
           var head = pts[0];
           for (k = 0; k < lens.length && u > 0; k++) {
             var part = Math.min(1, u / lens[k]);
-            line(pts[k], pts[k + 1], part, LIGHT, 0.8 * glow, 2.2);
+            line(pts[k], pts[k + 1], part, LIGHT, 0.6 * glow, 1.3);
             head = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * part, y: pts[k].y + (pts[k + 1].y - pts[k].y) * part };
-            if (part >= 1) dot(pts[k + 1], 3, LIGHT, 0.9 * glow);
+            if (part >= 1) dot(pts[k + 1], 2, LIGHT, 0.7 * glow);
             u -= lens[k];
           }
-          dot(pts[0], 3, LIGHT, 0.9 * glow);
-          if (L < TRAVEL) dot(head, 4.5, '215,215,215', 1);
+          dot(pts[0], 2, LIGHT, 0.7 * glow);
+          if (L < TRAVEL) dot(head, 3, '215,215,215', 0.9);
           ctx.restore();
         }
         // A and B.
@@ -237,16 +237,16 @@
   </script>
   <style>
     /* Data story: a small corner button that opens "Between A and B", told one hop at a time. */
-    #storyBtn{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;padding:0;background:rgba(255,255,255,0.92);border:1px solid rgba(85,85,85,0.28);box-shadow:0 3px 12px rgba(85,85,85,0.14);cursor:pointer;z-index:9000;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease;}
-    #storyBtn:hover,#storyBtn:focus-visible{transform:translateY(-2px);box-shadow:0 6px 18px rgba(85,85,85,0.22);outline:none;}
-    #storyBtn .tip{position:absolute;right:56px;white-space:nowrap;background:#555555;color:#fff;font-size:13px;padding:5px 10px;border-radius:5px;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+    #storyBtn{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;padding:0;background:rgba(255,255,255,0.92);border:1px solid rgba(0,31,63,0.28);box-shadow:0 3px 12px rgba(0,31,63,0.14);cursor:pointer;z-index:9000;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease;}
+    #storyBtn:hover,#storyBtn:focus-visible{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,31,63,0.22);outline:none;}
+    #storyBtn .tip{position:absolute;right:56px;white-space:nowrap;background:#001f3f;color:#fff;font-size:13px;padding:5px 10px;border-radius:5px;opacity:0;pointer-events:none;transition:opacity .2s ease;}
     #storyBtn:hover .tip,#storyBtn:focus-visible .tip{opacity:1;}
-    #storyOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(85,85,85,0);transition:background .4s ease;z-index:9999;display:none;}
-    #storyOverlay.open{background:rgba(85,85,85,0.12);}
-    #storyCard{position:fixed;top:50%;left:50%;width:460px;max-width:calc(100vw - 32px);box-sizing:border-box;transform:translate(-50%,-46%);opacity:0;transition:opacity .4s ease,transform .4s ease;background:rgba(255,255,255,0.95);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(85,85,85,0.2);border-top:4px solid #555555;border-radius:8px;box-shadow:0 8px 30px rgba(85,85,85,0.2);padding:26px 28px 20px;color:#222;text-align:left;}
+    #storyOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,31,63,0);transition:background .4s ease;z-index:9999;display:none;}
+    #storyOverlay.open{background:rgba(0,31,63,0.12);}
+    #storyCard{position:fixed;top:50%;left:50%;width:460px;max-width:calc(100vw - 32px);box-sizing:border-box;transform:translate(-50%,-46%);opacity:0;transition:opacity .4s ease,transform .4s ease;background:rgba(255,255,255,0.95);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,31,63,0.2);border-top:4px solid #001f3f;border-radius:8px;box-shadow:0 8px 30px rgba(0,31,63,0.2);padding:26px 28px 20px;color:#222;text-align:left;}
     #storyOverlay.open #storyCard{opacity:1;transform:translate(-50%,-50%);}
     #storyCard .x{position:absolute;top:8px;right:14px;font-size:16px;cursor:pointer;color:#666;background:none;border:0;padding:4px;}
-    #storyCard .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#808080;margin-bottom:10px;}
+    #storyCard .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#6b7a8c;margin-bottom:10px;}
     #storyArt{display:block;width:100%;height:auto;margin:0 0 14px;}
     /* The drawing has one state per story step (s0 to s7), so it follows the text step by step. */
     @keyframes storyPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.35);}}
@@ -256,10 +256,10 @@
     /* The line only moves forward: A, hop 1, (doubt) hop 2, (old doubt from A) hop 3, B. Then the whole path lights up. */
     #storyArt .g-reach{opacity:0;transition:opacity .6s ease;}
     #storyArt.s2 .g-reach{opacity:1;}
-    #storyArt .opt{fill:none;stroke:#555555;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
+    #storyArt .opt{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
     #storyArt.s2 .opt-a,#storyArt.s2 .opt-b,#storyArt.s3 .opt-c,#storyArt.s3 .opt-d{opacity:.7;animation:storyPulse 1.6s ease-in-out infinite;}
     #storyArt.s4 .opt-d{opacity:.7;animation:storyPulse 1.6s ease-in-out 2;}
-    #storyArt .seg,#storyArt .probe{fill:none;stroke:#555555;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1;}
+    #storyArt .seg,#storyArt .probe{fill:none;stroke:#001f3f;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1;}
     #storyArt .probe{stroke-width:1.3;opacity:.45;transition:stroke-dashoffset .9s ease,opacity .6s ease;}
     /* Doubts are never erased: after they are felt, a faint stub stays. */
     #storyArt.s3 .probe1{stroke-dashoffset:.5;transition-delay:.9s;}
@@ -279,27 +279,27 @@
     #storyArt.s3 .hop1{transition-delay:.7s;}
     #storyArt.s4 .hop2{transition-delay:1.6s;}
     #storyArt.s5 .hop3{transition-delay:2.5s;}
-    #storyArt .b-ring{fill:none;stroke:#555555;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
+    #storyArt .b-ring{fill:none;stroke:#001f3f;stroke-width:1.2;opacity:0;transition:opacity .5s ease;}
     #storyArt.s6 .b-ring{opacity:.6;transition-delay:.8s;animation:storyPulse 1.6s ease-in-out infinite;}
-    #storyArt .g-many{fill:none;stroke:#555555;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s ease;}
+    #storyArt .g-many{fill:none;stroke:#001f3f;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s ease;}
     #storyArt.s7 .g-many{opacity:.22;}
     #storyText{transition:opacity .2s ease;min-height:132px;}
-    #storyText .t{font-size:19px;font-weight:600;color:#555555;margin:0 0 6px;}
+    #storyText .t{font-size:19px;font-weight:600;color:#001f3f;margin:0 0 6px;}
     #storyText .p{font-size:15.5px;line-height:1.6;margin:0;}
-    #storyText .note{font-size:13.5px;line-height:1.5;color:#808080;font-style:italic;margin:10px 0 0;}
+    #storyText .note{font-size:13.5px;line-height:1.5;color:#6b7a8c;font-style:italic;margin:10px 0 0;}
     #storyNav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;}
     #storyHops{display:flex;align-items:center;}
-    #storyHops span{width:7px;height:7px;border-radius:50%;background:rgba(85,85,85,0.18);transition:background .3s ease;}
-    #storyHops span.on{background:#555555;}
-    #storyHops i{width:12px;height:1px;background:rgba(85,85,85,0.18);transition:background .3s ease;}
-    #storyHops i.on{background:#555555;}
+    #storyHops span{width:7px;height:7px;border-radius:50%;background:rgba(0,31,63,0.18);transition:background .3s ease;}
+    #storyHops span.on{background:#001f3f;}
+    #storyHops i{width:12px;height:1px;background:rgba(0,31,63,0.18);transition:background .3s ease;}
+    #storyHops i.on{background:#001f3f;}
     #storyNav button{font:inherit;font-size:14px;font-weight:600;border-radius:5px;cursor:pointer;padding:6px 14px;}
-    #storyBack{background:none;border:0;color:#555555;}
-    #storyNext{background:#555555;color:#fff;border:1px solid #555555;margin-left:6px;}
+    #storyBack{background:none;border:0;color:#001f3f;}
+    #storyNext{background:#001f3f;color:#fff;border:1px solid #001f3f;margin-left:6px;}
     @media (prefers-reduced-motion: reduce){#storyBtn,#storyCard,#storyArt *,#storyText,#storyOverlay{transition:none !important;animation:none !important;}}
   </style>
   <button id="storyBtn" type="button" aria-label="Read a short story: Between A and B">
-    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="18" x2="13" y2="21" stroke="#555555" stroke-width="1.3" stroke-dasharray="2 2" opacity=".45"/><polyline points="4,18 11,7 20,12" fill="none" stroke="#555555" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="18" r="2.4" fill="#555555"/><circle cx="11" cy="7" r="1.7" fill="#555555"/><circle cx="20" cy="12" r="2.4" fill="#555555"/></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="18" x2="13" y2="21" stroke="#001f3f" stroke-width="1.3" stroke-dasharray="2 2" opacity=".45"/><polyline points="4,18 11,7 20,12" fill="none" stroke="#001f3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="18" r="2.4" fill="#001f3f"/><circle cx="11" cy="7" r="1.7" fill="#001f3f"/><circle cx="20" cy="12" r="2.4" fill="#001f3f"/></svg>
     <span class="tip">Between A and B: a short story</span>
   </button>
   <div id="storyOverlay">
@@ -307,18 +307,18 @@
       <button class="x" type="button" id="storyClose" aria-label="Close">✕</button>
       <div class="kicker">A data story by Ghazal · Between A and B</div>
       <svg id="storyArt" viewBox="0 0 300 96" aria-hidden="true">
-        <circle class="g-reach" cx="22" cy="60" r="85" fill="rgba(85,85,85,0.03)" stroke="rgba(85,85,85,0.35)" stroke-width="0.8" stroke-dasharray="3 3"/>
-        <g class="g-dots" fill="rgba(85,85,85,0.35)"><circle cx="80" cy="30" r="2.6"/><circle cx="100" cy="74" r="2.6"/><circle cx="150" cy="58" r="2.6"/><circle cx="165" cy="22" r="2.6"/><circle cx="212" cy="72" r="2.6"/><circle cx="232" cy="38" r="2.6"/><circle cx="125" cy="40" r="2.6"/></g>
+        <circle class="g-reach" cx="22" cy="60" r="85" fill="rgba(0,31,63,0.03)" stroke="rgba(0,31,63,0.35)" stroke-width="0.8" stroke-dasharray="3 3"/>
+        <g class="g-dots" fill="rgba(0,31,63,0.35)"><circle cx="80" cy="30" r="2.6"/><circle cx="100" cy="74" r="2.6"/><circle cx="150" cy="58" r="2.6"/><circle cx="165" cy="22" r="2.6"/><circle cx="212" cy="72" r="2.6"/><circle cx="232" cy="38" r="2.6"/><circle cx="125" cy="40" r="2.6"/></g>
         <circle class="opt opt-a pulse" cx="80" cy="30" r="6"/><circle class="opt opt-b pulse" cx="100" cy="74" r="6"/>
         <circle class="opt opt-c pulse" cx="150" cy="58" r="6"/><circle class="opt opt-d pulse" cx="165" cy="22" r="6"/>
         <g class="g-many"><polyline points="22,60 100,74 212,72 278,44"/><polyline points="22,60 125,40 232,38 278,44"/><polyline points="22,60 80,30 150,58 232,38 278,44"/><polyline points="22,60 100,74 125,40 165,22 278,44"/><polyline points="22,60 150,58 212,72 278,44"/></g>
         <line class="probe probe1" pathLength="1" x1="80" y1="30" x2="150" y2="58"/><line class="probe probe2" pathLength="1" x1="22" y1="60" x2="100" y2="74"/>
         <line class="seg seg1" pathLength="1" x1="22" y1="60" x2="80" y2="30"/><line class="seg seg2" pathLength="1" x1="80" y1="30" x2="165" y2="22"/><line class="seg seg3" pathLength="1" x1="165" y1="22" x2="232" y2="38"/><line class="seg seg4" pathLength="1" x1="232" y1="38" x2="278" y2="44"/>
-        <circle class="hop hop1" cx="80" cy="30" r="3.4" fill="#555555"/><circle class="hop hop2" cx="165" cy="22" r="3.4" fill="#555555"/><circle class="hop hop3" cx="232" cy="38" r="3.4" fill="#555555"/>
+        <circle class="hop hop1" cx="80" cy="30" r="3.4" fill="#001f3f"/><circle class="hop hop2" cx="165" cy="22" r="3.4" fill="#001f3f"/><circle class="hop hop3" cx="232" cy="38" r="3.4" fill="#001f3f"/>
         <circle class="b-ring pulse" cx="278" cy="44" r="9"/>
-        <circle cx="22" cy="60" r="5" fill="#555555"/><circle cx="278" cy="44" r="5" fill="#555555"/>
-        <text x="22" y="84" font-size="11" fill="#555555" text-anchor="middle" font-weight="600">A</text>
-        <text x="278" y="30" font-size="11" fill="#555555" text-anchor="middle" font-weight="600">B</text>
+        <circle cx="22" cy="60" r="5" fill="#001f3f"/><circle cx="278" cy="44" r="5" fill="#001f3f"/>
+        <text x="22" y="84" font-size="11" fill="#001f3f" text-anchor="middle" font-weight="600">A</text>
+        <text x="278" y="30" font-size="11" fill="#001f3f" text-anchor="middle" font-weight="600">B</text>
       </svg>
       <div id="storyText" aria-live="polite"><div class="t" id="storyTitle"></div><p class="p"></p><p class="note"></p></div>
       <div id="storyNav">
@@ -410,13 +410,13 @@
 
 I'm a PhD candidate at the [Kahlert School of Computing](https://www.cs.utah.edu/) at the University of Utah (since 2022), where I work with [Prof. Robert Ricci](https://ricci.io) as part of the [Flux Research Group](https://www.flux.utah.edu/). My research is about how computing systems can notice what is forming in their own data early enough to act on it, in a way people can follow. I call this Interpretable Signal-to-Control (O→S→C: observation, signal, control), and I have developed it in serverless computing, data center networking, and network security.
 
-<div style="border-left:4px solid #555555;background:#f4f6f9;padding:12px 16px;margin:20px 0 16px;border-radius:0 6px 6px 0;text-align:left;line-height:1.5;">
-  <strong style="color:#555555;">On the academic job market, 2026–27</strong><br>
+<div style="border-left:4px solid #001f3f;background:#f4f6f9;padding:12px 16px;margin:20px 0 16px;border-radius:0 6px 6px 0;text-align:left;line-height:1.5;">
+  <strong style="color:#001f3f;">On the academic job market, 2026–27</strong><br>
   Seeking tenure-track faculty and postdoctoral positions.
 </div>
 <div style="display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px;">
-  <a href="research.html" style="display:inline-block;padding:8px 16px;border-radius:5px;background:#555555;color:#fff;font-weight:600;text-decoration:none;">Research Overview →</a>
-  <a href="assets/Ghazal_Abdollahi_CV.pdf" style="display:inline-block;padding:7px 16px;border-radius:5px;border:1px solid #555555;color:#555555;font-weight:600;text-decoration:none;">Short CV (PDF)</a>
+  <a href="research.html" style="display:inline-block;padding:8px 16px;border-radius:5px;background:#001f3f;color:#fff;font-weight:600;text-decoration:none;">Research Overview →</a>
+  <a href="assets/Ghazal_Abdollahi_CV.pdf" style="display:inline-block;padding:7px 16px;border-radius:5px;border:1px solid #001f3f;color:#001f3f;font-weight:600;text-decoration:none;">Short CV (PDF)</a>
 </div>
 
 <div align="center">
