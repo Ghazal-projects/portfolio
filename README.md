@@ -60,7 +60,7 @@
       var ctx = canvas.getContext('2d');
       var APPEAR = 700, BRANCH = 650, TRY = 1000, PICK = 550, HOP = BRANCH + TRY + PICK;
       var TRAVEL = 1500, GLOW = 1500, FADE = 1200, REST = 900, PAD = 26;
-      var INK = '85,85,85', LIGHT = '160,160,160';
+      var INK = '130,130,130', LIGHT = '185,185,185';
       // Each pattern: the path taken from A (first) to B (last), in margin
       // coordinates (x across the margin, y down the screen, both 0 to 1), and
       // for each of the five hops the other ways on (alts) and which one is
@@ -150,10 +150,10 @@
           for (j = 0; j < ends.length; j++) {
             var len = j === hp.tryAlt ? tried : reach;
             if (picked) len = 0.45 - 0.2 * pk;
-            line(A, ends[j], len, INK, (0.42 - 0.3 * pk) * fade, 1.5);
+            line(A, ends[j], len, INK, (0.42 - 0.3 * pk) * fade, 1);
           }
           var g = hp.tryAlt < 0 ? (picked ? 0.75 + 0.25 * pk : tried) : (picked ? 0.45 + 0.55 * pk : reach);
-          line(A, B, g, INK, 0.45 * fade, 1.6);
+          line(A, B, g, INK, 0.45 * fade, 1.1);
           if (trying) {
             var T = hp.tryAlt >= 0 ? ends[hp.tryAlt] : B, tl = hp.tryAlt >= 0 ? tried : g;
             var tip = { x: A.x + (T.x - A.x) * tl, y: A.y + (T.y - A.y) * tl };
@@ -176,13 +176,13 @@
           var head = pts[0];
           for (k = 0; k < lens.length && u > 0; k++) {
             var part = Math.min(1, u / lens[k]);
-            line(pts[k], pts[k + 1], part, LIGHT, 0.6 * glow, 1.3);
+            line(pts[k], pts[k + 1], part, LIGHT, 0.6 * glow, 0.9);
             head = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * part, y: pts[k].y + (pts[k + 1].y - pts[k].y) * part };
             if (part >= 1) dot(pts[k + 1], 2, LIGHT, 0.7 * glow);
             u -= lens[k];
           }
           dot(pts[0], 2, LIGHT, 0.7 * glow);
-          if (L < TRAVEL) dot(head, 3, '215,215,215', 0.9);
+          if (L < TRAVEL) dot(head, 2.6, '225,225,225', 0.9);
           ctx.restore();
         }
         // A and B.
